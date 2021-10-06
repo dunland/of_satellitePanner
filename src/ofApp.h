@@ -5,7 +5,6 @@
 #include <list>
 #include "Globals.h"
 #include "ofxOsc.h"
-#include "ofxFFMPEGVideoPlayer.h"
 
 #define PORT 9001
 
