@@ -34,7 +34,6 @@ public:
     static float circles_grow_factor;
     static float circles_shrink_factor;
 
-    static bool reset_circles;
     static bool draw_circles;
     static float circles_probability;
 
@@ -42,7 +41,15 @@ public:
     static int previous_brightness_threshold;
 
     static void check_brightness(int x, int y, float brightness_val);
+    static void resize_circles();
 
-	static std::vector<Circle *> circles;
+    static std::vector<Circle *> circles;
     static bool circle_list[1920][1080]; // place holder to keep track where circles are
+};
+
+/////////////////////////////// GLOBALS ///////////////////////////////
+class Globals
+{
+public:
+    static ofVideoPlayer video;
 };

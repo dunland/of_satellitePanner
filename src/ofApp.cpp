@@ -18,9 +18,10 @@ void ofApp::setup()
 
     ofSetCircleResolution(100);
 
-    video.load("20210930_Flaggenwind.mp4");
-    video.load("satellite_panner.mp4");
-    video.play();
+    // video.load("20210930_Flaggenwind.mp4");
+    // video.load("satellite_panner.mp4");
+    Globals::video.load("20211010_SF-Küste_00.mp4");
+    Globals::video.play();
 
     settings.setOutListener(this);
     settings.sampleRate = 48000;
@@ -63,38 +64,13 @@ void ofApp::update()
     // }
 
     // video ---------------------------------------------------
-    video.update();
+    Globals::video.update();
 
-    ofPixels &vidPixels = video.getPixels();
-
+    ofPixels &vidPixels = Globals::video.getPixels();
     int vidWidth = vidPixels.getWidth();
     int vidHeight = vidPixels.getHeight();
 
     int r = CircleControls::circles_radius;
-
-    // update circle position/density:
-    if (CircleControls::reset_circles)
-    {
-        CircleControls::circles.clear();
-        for (int i = 0; i < 1920; i++)
-            for (int j = 0; j < 1080; j++)
-                CircleControls::circle_list[i][j] = false;
-
-        for (int i = r; i < vidWidth - r * 2; i += r * 2)
-        {
-            for (int j = r; j < vidHeight - r * 2; j += r * 2)
-            {
-                if (ofRandom(0, 1) > CircleControls::circles_probability)
-                {
-                    CircleControls::circles.push_back(new Circle(i, j, r));
-                    CircleControls::circle_list[i][j] = true;
-                }
-            }
-        }
-
-        CircleControls::reset_circles = false;
-        // cout << r << endl;
-    }
 
     // ------- resizing circles:
     for (auto &circle : CircleControls::circles)
@@ -190,9 +166,9 @@ void ofApp::draw()
     {
         ofNoFill();
         ofSetColor(255, 255, 255); // reset color for video (else affected by circles-color)
-        video.draw(0, 0);
+        Globals::video.draw(0, 0);
     }
-    ofPixels &vidPixels = video.getPixels();
+    ofPixels &vidPixels = Globals::video.getPixels();
 
     for (auto &circle : CircleControls::circles)
     {
@@ -201,7 +177,7 @@ void ofApp::draw()
             circle->draw();
     }
 
-    if (video.getIsMovieDone())
+    if (Globals::video.getIsMovieDone())
     {
         ofSetHexColor(0xFF0000);
         ofDrawBitmapString("end of movie", 20, 440);
@@ -237,19 +213,19 @@ void ofApp::keyReleased(int key)
     if (key == 'r')
     {
         CircleControls::circles_radius = ofRandom(2, 10);
-        CircleControls::reset_circles = true;
+        CircleControls::resize_circles();
     }
     else if (key == '+')
     {
         CircleControls::circles_radius += CircleControls::circles_radius * 0.3;
-        CircleControls::reset_circles = true; // TODO: CircleControls::reset_circles() as a function
+        CircleControls::resize_circles();
     }
     else if (key == '-')
     {
         CircleControls::circles_radius -= CircleControls::circles_radius * 0.3;
         // if (CircleControls::circles_radius < CircleControls::circles_radius_standard)
         //     CircleControls::circles_radius = CircleControls::circles_radius_standard;
-        CircleControls::reset_circles = true;
+        CircleControls::resize_circles();
     }
 
     else if (key == 'f')

@@ -31,11 +31,6 @@ public:
 
 	ofxOscReceiver receiver;
 
-	ofImage image;
-	ofPixels imgPixels;
-	ofTexture texture;
-
-	ofVideoPlayer video;
 	bool use_video = true;
 	bool show_video = false; // toggles video on/off
 
