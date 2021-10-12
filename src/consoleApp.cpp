@@ -5,10 +5,13 @@
 //--------------------------------------------------------------
 void consoleApp::setup()
 {
+
+    ofSetWindowTitle("consoleApp");
+
     gui.setup();
     gui.add(gui_spawn_threshold.setup("spawn threshold", 180, 0, 255));
     gui.add(gui_circleSpawnProbability.setup("spawn probability", 0.1, 0, 1));
-    gui.add(gui_circleRadius.setup("circle radius", 180, 4, 255));
+    gui.add(gui_circleRadius.setup("circle radius", 7, 4, 255));
     gui.add(gui_circleShrinkFactor.setup("circle shrink factor", 0.1, 0, 10));
     gui.add(gui_circleGrowFactor.setup("circle grow factor", 1, 0, 10));
     gui.add(guiChangeSpawnMode.setup("toggle spawn mode", false));

@@ -5,6 +5,8 @@
 //--------------------------------------------------------------
 void ofApp::setup()
 {
+    ofSetWindowTitle("ofApp");
+
     // receiver.setup(PORT);
 
     cout << ofSoundStreamListDevices() << endl;
@@ -19,8 +21,8 @@ void ofApp::setup()
     ofSetCircleResolution(100);
 
     // video.load("20210930_Flaggenwind.mp4");
-    // video.load("satellite_panner.mp4");
     Globals::video.load("20211010_SF-Küste_00.mp4");
+    Globals::video.load("satellite_panner.mp4");
     Globals::video.play();
 
     settings.setOutListener(this);
@@ -109,9 +111,9 @@ void ofApp::update()
     // }
 
     // --------------------------- pixel brightness: ----------------------------
-    for (int i = 0; i < vidWidth - CircleControls::circles_radius * 2; i += CircleControls::circles_radius * 2)
+    for (int i = r * 2; i < vidWidth; i += r * 2)
     {
-        for (int j = CircleControls::circles_radius; j < vidHeight - CircleControls::circles_radius * 2; j += CircleControls::circles_radius * 2)
+        for (int j = r * 2; j < vidHeight; j += r * 2)
         {
             float brightness_val = vidPixels.getColor(i, j).getBrightness();
             float lightness_val = vidPixels.getColor(i,j).getLightness(); // TODO: make selectable
@@ -122,7 +124,7 @@ void ofApp::update()
                 {
                     if (ofRandom(0, 1) > CircleControls::circles_probability)
                     {
-                        CircleControls::circles.push_back(new Circle(i, j, CircleControls::circles_radius));
+                        CircleControls::circles.push_back(new Circle(i, j, r));
                         CircleControls::circle_list[i][j] = true;
                     }
                 }
