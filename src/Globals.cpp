@@ -5,7 +5,10 @@
 void Circle::draw()
 {
     color.set(color.r, color.g, color.b, life_cycle);
-    radius = color.getBrightness() / 255 * CircleControls::circles_radius;
+    if (CircleControls::spawn_mode[CircleControls::spawn_index] == "brightness")
+        radius = color.getBrightness() / 255 * CircleControls::circles_radius;
+    else if (CircleControls::spawn_mode[CircleControls::spawn_index] == "lightness")
+        radius = color.getLightness() / 255 * CircleControls::circles_radius;
     ofSetColor(color);
     ofFill();
     ofDrawCircle(x - radius, y - radius, radius);
@@ -25,13 +28,16 @@ float CircleControls::circles_shrink_factor = 0.1;
 bool CircleControls::draw_circles = true;
 float CircleControls::circles_probability = 0.3;
 
-int CircleControls::brightness_threshold = 180;
-int CircleControls::previous_brightness_threshold = CircleControls::brightness_threshold;
+int CircleControls::spawn_threshold = 180;
+int CircleControls::previous_spawn_threshold = CircleControls::spawn_threshold;
+
+int CircleControls::spawn_index = 0;
+vector<string> CircleControls::spawn_mode = {"brightness", "lightness"};
 
 // --------------------- check pixel brightness -----------------------
-void CircleControls::check_brightness(int x, int y, float brightness_val)
+void CircleControls::checkThreshold(int x, int y, float threshold_val)
 {
-    if (brightness_val > CircleControls::brightness_threshold)
+    if (threshold_val > CircleControls::spawn_threshold)
     {
         // empty slot: create circle ----------------------------------
         if (circle_list[x][y] == false)
@@ -76,9 +82,9 @@ void CircleControls::resize_circles()
             CircleControls::circle_list[i][j] = false;
 
     // create new circles:
-    for (int i = r * 2; i < vidWidth; i += r * 2)
+    for (int i = r * 3; i < vidWidth; i += r * 2)
     {
-        for (int j = r * 2; j < vidHeight; j += r * 2)
+        for (int j = r * 3; j < vidHeight; j += r * 2)
         {
             if (ofRandom(0, 1) > CircleControls::circles_probability)
             {

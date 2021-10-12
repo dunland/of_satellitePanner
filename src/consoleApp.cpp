@@ -5,11 +5,31 @@
 //--------------------------------------------------------------
 void consoleApp::setup()
 {
+    gui.setup();
+    gui.add(gui_spawn_threshold.setup("spawn threshold", 180, 0, 255));
+    gui.add(gui_circleSpawnProbability.setup("spawn probability", 0.1, 0, 1));
+    gui.add(gui_circleRadius.setup("circle radius", 180, 4, 255));
+    gui.add(gui_circleShrinkFactor.setup("circle shrink factor", 0.1, 0, 10));
+    gui.add(gui_circleGrowFactor.setup("circle grow factor", 1, 0, 10));
+    gui.add(guiChangeSpawnMode.setup("toggle spawn mode", false));
+    gui.setPosition(0, 100);
 }
 
 //--------------------------------------------------------------
 void consoleApp::update()
 {
+    // update global values with gui:
+    CircleControls::circles_radius = gui_circleRadius;
+    CircleControls::spawn_threshold = gui_spawn_threshold;
+    CircleControls::circles_grow_factor = gui_circleGrowFactor;
+    CircleControls::circles_shrink_factor = gui_circleShrinkFactor;
+    CircleControls::circles_probability = gui_circleSpawnProbability;
+
+    if (guiChangeSpawnMode)
+    {
+        CircleControls::spawn_index = (CircleControls::spawn_index + 1) % CircleControls::spawn_mode.size();
+        guiChangeSpawnMode = false;
+    }
 }
 
 //--------------------------------------------------------------
@@ -25,25 +45,10 @@ void consoleApp::draw()
     string numOfCircles = "num of circles: " + ofToString(CircleControls::circles.size(), 2);
     ofDrawBitmapString(numOfCircles, 20, 60);
 
-    // display circle radius:
-    string circlesRadius = "circles_radius: " + ofToString(CircleControls::circles_radius, 2);
-    ofDrawBitmapString(circlesRadius, 20, 80);
+    string strSpawnMode = "spawn mode: " + CircleControls::spawn_mode[CircleControls::spawn_index];
+    ofDrawBitmapString(strSpawnMode, 20, 80);
 
-    // display circles creation probability:
-    string circlesProbability = "circles_probability: " + ofToString(CircleControls::circles_probability, 2);
-    ofDrawBitmapString(circlesProbability, 20, 100);
-
-    // display circle brightness creation threshold:
-    string brightnessThreshold = "brightness_threshold: " + ofToString(CircleControls::brightness_threshold, 2);
-    ofDrawBitmapString(brightnessThreshold, 20, 120);
-
-    // display circle grow and shrink factor:
-    string circleGrowFactor = "circle grow factor: " + ofToString(CircleControls::circles_grow_factor, 2);
-    ofDrawBitmapString(circleGrowFactor, 20, 140);
-    string circleShrinkFactor = "circle shrink factor: " + ofToString(CircleControls::circles_shrink_factor, 2);
-    ofDrawBitmapString(circleShrinkFactor, 20, 160);
-
-    // display more stuff
+    gui.draw();
 }
 
 //--------------------------------------------------------------

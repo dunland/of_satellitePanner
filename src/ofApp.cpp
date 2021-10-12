@@ -73,8 +73,8 @@ void ofApp::update()
     int r = CircleControls::circles_radius;
 
     // ------- resizing circles:
-    for (auto &circle : CircleControls::circles)
-        circle->radius = r;
+    // for (auto &circle : CircleControls::circles)
+    //     circle->radius = r;
 
     // TODO: do this only for neighboring circles of already existent ones
 
@@ -86,15 +86,15 @@ void ofApp::update()
     //         if (CircleControls::circle_list[i][j] == true)
     //         {
     //             float brightness_val = vidPixels.getColor(i, j).getBrightness();
-    //             CircleControls::check_brightness(i, j, brightness_val);
-    //             CircleControls::check_brightness(i+n, j, brightness_val);
-    //             CircleControls::check_brightness(i+n, j+n, brightness_val);
-    //             CircleControls::check_brightness(i, j+n, brightness_val);
-    //             CircleControls::check_brightness(i-n, j+n, brightness_val);
-    //             CircleControls::check_brightness(i-n, j, brightness_val);
-    //             CircleControls::check_brightness(i-n, j-n, brightness_val);
-    //             CircleControls::check_brightness(i, j-n, brightness_val);
-    //             CircleControls::check_brightness(i+n, j-n, brightness_val);
+    //             CircleControls::checkThreshold(i, j, brightness_val);
+    //             CircleControls::checkThreshold(i+n, j, brightness_val);
+    //             CircleControls::checkThreshold(i+n, j+n, brightness_val);
+    //             CircleControls::checkThreshold(i, j+n, brightness_val);
+    //             CircleControls::checkThreshold(i-n, j+n, brightness_val);
+    //             CircleControls::checkThreshold(i-n, j, brightness_val);
+    //             CircleControls::checkThreshold(i-n, j-n, brightness_val);
+    //             CircleControls::checkThreshold(i, j-n, brightness_val);
+    //             CircleControls::checkThreshold(i+n, j-n, brightness_val);
     //             // i+n, j
     //             // i+n, j+n
     //             // i, j+n
@@ -114,7 +114,8 @@ void ofApp::update()
         for (int j = CircleControls::circles_radius; j < vidHeight - CircleControls::circles_radius * 2; j += CircleControls::circles_radius * 2)
         {
             float brightness_val = vidPixels.getColor(i, j).getBrightness();
-            if (brightness_val > CircleControls::brightness_threshold)
+            float lightness_val = vidPixels.getColor(i,j).getLightness(); // TODO: make selectable
+            if (lightness_val > CircleControls::spawn_threshold)
             {
                 // empty slot: create circle ------------------------------------
                 if (CircleControls::circle_list[i][j] == false)
@@ -189,20 +190,20 @@ void ofApp::keyPressed(int key)
 {
     if (key == 'b')
     {
-        CircleControls::brightness_threshold += 1;
-        cout << CircleControls::brightness_threshold << endl;
+        CircleControls::spawn_threshold += 1;
+        cout << CircleControls::spawn_threshold << endl;
     }
 
     else if (key == 'n')
     {
-        CircleControls::brightness_threshold -= 1;
-        cout << CircleControls::brightness_threshold << endl;
+        CircleControls::spawn_threshold -= 1;
+        cout << CircleControls::spawn_threshold << endl;
     }
 
     else if (key == ' ' && !spacebar_lock)
     {
-        CircleControls::previous_brightness_threshold = CircleControls::brightness_threshold;
-        CircleControls::brightness_threshold -= CircleControls::brightness_threshold / 2;
+        CircleControls::previous_spawn_threshold = CircleControls::spawn_threshold;
+        CircleControls::spawn_threshold -= CircleControls::spawn_threshold / 2;
         spacebar_lock = true;
     }
 }
@@ -246,7 +247,7 @@ void ofApp::keyReleased(int key)
     else if (key == ' ')
     {
         spacebar_lock = false;
-        CircleControls::brightness_threshold = CircleControls::previous_brightness_threshold;
+        CircleControls::spawn_threshold = CircleControls::previous_spawn_threshold;
     }
 }
 
