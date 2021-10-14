@@ -42,11 +42,11 @@ void CircleControls::checkThreshold(int x, int y, float threshold_val)
         // empty slot: create circle ----------------------------------
         if (circle_list[x][y] == false)
         {
-            // if (ofRandom(0, 1) > CircleControls::circles_probability)
-            // {
-            CircleControls::circles.push_back(new Circle(x, y, CircleControls::circles_radius));
-            circle_list[x][y] = true;
-            // }
+            if (ofRandom(0, 1) < CircleControls::circles_probability)
+            {
+                CircleControls::circles.push_back(new Circle(x, y, CircleControls::circles_radius));
+                circle_list[x][y] = true;
+            }
         }
         // occupied slot: get circle and do life_cycle++ --------------
         else
@@ -86,7 +86,7 @@ void CircleControls::resize_circles()
     {
         for (int j = r * 3; j < vidHeight; j += r * 2)
         {
-            if (ofRandom(0, 1) > CircleControls::circles_probability)
+            if (ofRandom(0, 1) < CircleControls::circles_probability)
             {
                 CircleControls::circles.push_back(new Circle(i, j, r));
                 CircleControls::circle_list[i][j] = true;

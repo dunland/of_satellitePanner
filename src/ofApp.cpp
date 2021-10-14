@@ -9,28 +9,14 @@ void ofApp::setup()
 
     // receiver.setup(PORT);
 
-    cout << ofSoundStreamListDevices() << endl;
-    // ofSoundStream::setDevice(2);
-    ofSoundStreamSetup(2, 0, 48000, 256, 4);
-
-    auto devices = soundStream.getDeviceList();
-
-    ofSoundStreamSettings settings;
-    settings.setOutDevice(devices[2]);
-
     ofSetCircleResolution(100);
 
-    // video.load("20210930_Flaggenwind.mp4");
+    // audioSetup(2);
+
+    Globals::video.load("20210930_Flaggenwind.mp4");
     Globals::video.load("20211010_SF-Küste_00.mp4");
     Globals::video.load("satellite_panner.mp4");
     Globals::video.play();
-
-    settings.setOutListener(this);
-    settings.sampleRate = 48000;
-    settings.numOutputChannels = 2;
-    settings.numInputChannels = 0;
-    settings.bufferSize = 256;
-    soundStream.setup(settings);
 
     // // create circles initially:
     // ofPixels &vidPixels = video.getPixels();
@@ -74,10 +60,6 @@ void ofApp::update()
 
     int r = CircleControls::circles_radius;
 
-    // ------- resizing circles:
-    // for (auto &circle : CircleControls::circles)
-    //     circle->radius = r;
-
     // TODO: do this only for neighboring circles of already existent ones
 
     // int n = int(r * 2);
@@ -110,38 +92,24 @@ void ofApp::update()
     //     }
     // }
 
-    // --------------------------- pixel brightness: ----------------------------
-    for (int i = r * 2; i < vidWidth; i += r * 2)
+    // TODO: opencv → circle creation only along lines!
+
+    // naturally create one circle at a time:
+    if (ofGetFrameNum() > 1 && ofGetFrameRate() > 30)
     {
-        for (int j = r * 2; j < vidHeight; j += r * 2)
+        // --------------------------- pixel brightness: ----------------------------
+        // int i = int(ofRandom(0, ofGetWindowWidth()));
+        // int j = int(ofRandom(0, ofGetWindowHeight()));
+        for (int i = r * 2; i < vidWidth; i += r * 2)
         {
-            float brightness_val = vidPixels.getColor(i, j).getBrightness();
-            float lightness_val = vidPixels.getColor(i,j).getLightness(); // TODO: make selectable
-            if (lightness_val > CircleControls::spawn_threshold)
+            for (int j = r * 2; j < vidHeight; j += r * 2)
             {
-                // empty slot: create circle ------------------------------------
-                if (CircleControls::circle_list[i][j] == false)
-                {
-                    if (ofRandom(0, 1) > CircleControls::circles_probability)
-                    {
-                        CircleControls::circles.push_back(new Circle(i, j, r));
-                        CircleControls::circle_list[i][j] = true;
-                    }
-                }
-                // occupied slot: get circle and do life_cycle++ ----------------
+                float threshold_val;
+                if (CircleControls::spawn_mode[CircleControls::spawn_index] == "brightness")
+                    threshold_val = vidPixels.getColor(i, j).getBrightness();
                 else
-                {
-                    Circle *this_circle;
-                    for (auto &circle : CircleControls::circles)
-                    {
-                        if (circle->x == i && circle->y == j)
-                        {
-                            this_circle = circle;
-                            break;
-                        }
-                    }
-                    this_circle->life_cycle += CircleControls::circles_grow_factor;
-                }
+                    threshold_val = vidPixels.getColor(i, j).getLightness(); // TODO: make selectable
+                CircleControls::checkThreshold(i, j, threshold_val);
             }
         }
     }
@@ -155,7 +123,6 @@ void ofApp::update()
         {
             CircleControls::circles.erase(CircleControls::circles.begin() + i);
             CircleControls::circle_list[circle->x][circle->y] = false;
-            cout << "circle removed. circles = " << CircleControls::circles.size() << endl;
         }
     }
 }
@@ -202,11 +169,31 @@ void ofApp::keyPressed(int key)
         cout << CircleControls::spawn_threshold << endl;
     }
 
-    else if (key == ' ' && !spacebar_lock)
+    else if (key == ' ')
     {
-        CircleControls::previous_spawn_threshold = CircleControls::spawn_threshold;
-        CircleControls::spawn_threshold -= CircleControls::spawn_threshold / 2;
-        spacebar_lock = true;
+        ofPixels &vidPixels = Globals::video.getPixels();
+        int vidWidth = vidPixels.getWidth();
+        int vidHeight = vidPixels.getHeight();
+
+        int r = CircleControls::circles_radius;
+
+        // only create circles if frameRate > 30
+        if (ofGetFrameNum() > 1 && ofGetFrameRate() > 30)
+        {
+            // --------------------------- pixel brightness: ----------------------------
+            for (int i = r * 2; i < vidWidth; i += r * 2)
+            {
+                for (int j = r * 2; j < vidHeight; j += r * 2)
+                {
+                    float threshold_val;
+                    if (CircleControls::spawn_mode[CircleControls::spawn_index] == "brightness")
+                        threshold_val = vidPixels.getColor(i, j).getBrightness();
+                    else
+                        threshold_val = vidPixels.getColor(i, j).getLightness(); // TODO: make selectable
+                    CircleControls::checkThreshold(i, j, threshold_val);
+                }
+            }
+        }
     }
 }
 
@@ -246,11 +233,10 @@ void ofApp::keyReleased(int key)
         CircleControls::draw_circles = !CircleControls::draw_circles;
     }
 
-    else if (key == ' ')
-    {
-        spacebar_lock = false;
-        CircleControls::spawn_threshold = CircleControls::previous_spawn_threshold;
-    }
+    // else if (key == ' ')
+    // {
+    //     spacebar_lock = false;
+    // }
 }
 
 //--------------------------------------------------------------
@@ -296,4 +282,24 @@ void ofApp::gotMessage(ofMessage msg)
 //--------------------------------------------------------------
 void ofApp::dragEvent(ofDragInfo dragInfo)
 {
+}
+
+//--------------------------------------------------------------
+void ofApp::audioSetup(int deviceNum)
+{
+    cout << ofSoundStreamListDevices() << endl;
+    // ofSoundStream::setDevice(2);
+    ofSoundStreamSetup(2, 0, 48000, 256, 4);
+
+    auto devices = soundStream.getDeviceList();
+
+    ofSoundStreamSettings settings;
+    settings.setOutDevice(devices[deviceNum]);
+
+    settings.setOutListener(this);
+    settings.sampleRate = 48000;
+    settings.numOutputChannels = 2;
+    settings.numInputChannels = 0;
+    settings.bufferSize = 256;
+    soundStream.setup(settings);
 }
