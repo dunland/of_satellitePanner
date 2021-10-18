@@ -16,25 +16,27 @@ void ofApp::setup()
     Globals::video.load("20210930_Flaggenwind.mp4");
     Globals::video.load("20211010_SF-Küste_00.mp4");
     Globals::video.load("satellite_panner.mp4");
+
+    vidWidth = Globals::video.getWidth();
+    vidHeight = Globals::video.getHeight();
+
     Globals::video.play();
 
-    // // create circles initially:
-    // ofPixels &vidPixels = video.getPixels();
+    colorImg.allocate(vidWidth, vidHeight);
+    grayImg.allocate(vidWidth, vidHeight);
 
-    // int vidWidth = vidPixels.getWidth();
-    // int vidHeight = vidPixels.getHeight();
-
-    // for (int i = CircleControls::circles_radius * 2; i < vidWidth - CircleControls::circles_radius * 2; i += CircleControls::circles_radius * 2)
-    // {
-    //     for (int j = CircleControls::circles_radius * 2; j < vidHeight - CircleControls::circles_radius * 2; j += CircleControls::circles_radius * 2)
-    //     {
-    //         if (ofRandom(0, 1) > CircleControls::circles_probability)
-    //         {
-    //             CircleControls::circles.push_back(new Circle(i, j, CircleControls::circles_radius));
-    //             CircleControls::circle_list[i][j] = true;
-    //         }
-    //     }
-    // }
+    // create circles initially:
+    for (int i = CircleControls::circles_radius * 2; i < vidWidth - CircleControls::circles_radius * 2; i += CircleControls::circles_radius * 2)
+    {
+        for (int j = CircleControls::circles_radius * 2; j < vidHeight - CircleControls::circles_radius * 2; j += CircleControls::circles_radius * 2)
+        {
+            if (ofRandom(0, 1) > CircleControls::circles_probability)
+            {
+                CircleControls::circles.push_back(new Circle(i, j, CircleControls::circles_radius));
+                CircleControls::circle_list[i][j] = true;
+            }
+        }
+    }
 }
 
 //--------------------------------------------------------------
@@ -54,9 +56,14 @@ void ofApp::update()
     // video ---------------------------------------------------
     Globals::video.update();
 
+    colorImg.setFromPixels(Globals::video.getPixels());
+    colorImg.convertToGrayscalePlanarImage(grayImg, 0);
+    grayImg.threshold(160);
+
+    Canny(grayImg, edge_img, LineDetection::edgeThreshold, LineDetection::edgeThreshold * 2);
+    Sobel(edge_img, sobel_img);
+
     ofPixels &vidPixels = Globals::video.getPixels();
-    int vidWidth = vidPixels.getWidth();
-    int vidHeight = vidPixels.getHeight();
 
     int r = CircleControls::circles_radius;
 
@@ -138,6 +145,33 @@ void ofApp::draw()
         ofSetColor(255, 255, 255); // reset color for video (else affected by circles-color)
         Globals::video.draw(0, 0);
     }
+
+    // ---------------------------- LINE DETECTION --------------------
+    if (LineDetection::drawLines)
+    {
+        Mat mat = toCv(edge_img);
+
+        vector<Vec4i> lines;
+        HoughLinesP(mat, lines, 120, CV_PI / 180, LineDetection::lineThreshold, LineDetection::minLineLength, LineDetection::maxLineGap); // (E,Rres,Thetares,Threshold,minLineLength,maxLineGap)
+        ofSetColor(255, 0, 0);
+        for (int i = 0; i < lines.size(); i++)
+        {
+            ofColor col = Globals::video.getPixels().getColor(lines[i][0], lines[i][1]);
+            ofSetColor(col);
+
+            float x1 = lines[i][0];
+            float y1 = lines[i][1];
+            float x2 = lines[i][2];
+            float y2 = lines[i][3];
+            ofPolyline l;
+            l.addVertex(x1, y1);
+            l.addVertex(x2, y2);
+
+            l.draw();
+        }
+    }
+
+    // ---------------------------- CIRCLES  --------------------------
     ofPixels &vidPixels = Globals::video.getPixels();
 
     for (auto &circle : CircleControls::circles)

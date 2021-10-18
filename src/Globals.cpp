@@ -96,3 +96,11 @@ void CircleControls::resize_circles()
 }
 /////////////////////////////// GLOBALS ///////////////////////////////
 ofVideoPlayer Globals::video;
+
+/////////////////////////// LINE DETECTION ////////////////////////////
+bool LineDetection::drawLines = true;
+
+int LineDetection::edgeThreshold; //    Canny Edge Detection
+int LineDetection::lineThreshold; //    Hough Transform Lines
+int LineDetection::minLineLength;
+int LineDetection::maxLineGap;

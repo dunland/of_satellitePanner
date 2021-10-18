@@ -5,6 +5,12 @@
 #include <list>
 #include "Globals.h"
 #include "ofxOsc.h"
+#include "ofxCv.h"
+#include "ofxOpenCv.h"
+#include "ofxGui.h"
+
+using namespace cv;
+using namespace ofxCv;
 
 #define PORT 9001
 
@@ -40,15 +46,12 @@ public:
 
 	bool spacebar_lock = false;
 
-	// -------- open cv: ----------
-	// ofxCvColorImage colorImg;
+	float vidWidth;
+	float vidHeight;
 
-	// ofxCvGrayscaleImage grayImage;
-	// ofxCvGrayscaleImage grayBg;
-	// ofxCvGrayscaleImage grayDiff;
+    // edge and line detection:
+	ofxCvColorImage colorImg;
+    ofxCvGrayscaleImage grayImg;
 
-	// ofxCvContourFinder contourFinder;
-
-	// int threshold;
-	// bool bLearnBakground;
+    ofImage img, edge_img, sobel_img;
 };

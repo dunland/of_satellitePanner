@@ -37,8 +37,8 @@ public:
     static float circles_probability;
     static int spawn_threshold;
     static int previous_spawn_threshold;
-	static int spawn_index;
-	static vector<string> spawn_mode;
+    static int spawn_index;
+    static vector<string> spawn_mode;
 
     // circle change:
     static float circles_grow_factor;
@@ -56,4 +56,15 @@ class Globals
 {
 public:
     static ofVideoPlayer video;
+};
+
+class LineDetection
+{
+public:
+    static bool drawLines;
+
+    static int edgeThreshold; //    Canny Edge Detection
+    static int lineThreshold; //    Hough Transform Lines
+    static int minLineLength;
+    static int maxLineGap;
 };
