@@ -33,3 +33,7 @@
 
 # Media files
 *.mp4
+
+# compiled stuff
+./obj/
+./bin/
