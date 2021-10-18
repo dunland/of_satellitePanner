@@ -35,5 +35,5 @@
 *.mp4
 
 # compiled stuff
-./obj/
-./bin/
+./obj/*
+./bin/*
