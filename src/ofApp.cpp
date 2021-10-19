@@ -26,17 +26,17 @@ void ofApp::setup()
     grayImg.allocate(vidWidth, vidHeight);
 
     // create circles initially:
-    for (int i = CircleControls::circles_radius * 2; i < vidWidth - CircleControls::circles_radius * 2; i += CircleControls::circles_radius * 2)
-    {
-        for (int j = CircleControls::circles_radius * 2; j < vidHeight - CircleControls::circles_radius * 2; j += CircleControls::circles_radius * 2)
-        {
-            if (ofRandom(0, 1) > CircleControls::circles_probability)
-            {
-                CircleControls::circles.push_back(new Circle(i, j, CircleControls::circles_radius));
-                CircleControls::circle_list[i][j] = true;
-            }
-        }
-    }
+    // for (int i = CircleControls::circles_radius * 2; i < vidWidth - CircleControls::circles_radius * 2; i += CircleControls::circles_radius * 2)
+    // {
+    //     for (int j = CircleControls::circles_radius * 2; j < vidHeight - CircleControls::circles_radius * 2; j += CircleControls::circles_radius * 2)
+    //     {
+    //         if (ofRandom(0, 1) > CircleControls::circles_probability)
+    //         {
+    //             CircleControls::circles.push_back(new Circle(i, j, CircleControls::circles_radius));
+    //             CircleControls::circle_list[i][j] = true;
+    //         }
+    //     }
+    // }
 }
 
 //--------------------------------------------------------------
@@ -101,45 +101,51 @@ void ofApp::update()
 
     // TODO: opencv → circle creation only along lines!
 
-    // naturally create one circle at a time:
-    if (ofGetFrameNum() > 1 && ofGetFrameRate() > 30)
+    if (CircleControls::draw_circles)
     {
-        // --------------------------- pixel brightness: ----------------------------
-        // int i = int(ofRandom(0, ofGetWindowWidth()));
-        // int j = int(ofRandom(0, ofGetWindowHeight()));
-        for (int i = r * 2; i < vidWidth; i += r * 2)
+
+        // naturally create one circle at a time:
+        if (ofGetFrameNum() > 1 && ofGetFrameRate() > 30)
         {
-            for (int j = r * 2; j < vidHeight; j += r * 2)
+            // --------------------------- pixel brightness: ----------------------------
+            // int i = int(ofRandom(0, ofGetWindowWidth()));
+            // int j = int(ofRandom(0, ofGetWindowHeight()));
+            for (int i = r * 2; i < vidWidth; i += r * 2)
             {
-                float threshold_val;
-                if (CircleControls::spawn_mode[CircleControls::spawn_index] == "brightness")
-                    threshold_val = vidPixels.getColor(i, j).getBrightness();
-                else
-                    threshold_val = vidPixels.getColor(i, j).getLightness(); // TODO: make selectable
-                CircleControls::checkThreshold(i, j, threshold_val);
+                for (int j = r * 2; j < vidHeight; j += r * 2)
+                {
+                    float threshold_val;
+                    if (CircleControls::spawn_mode[CircleControls::spawn_index] == "brightness")
+                        threshold_val = vidPixels.getColor(i, j).getBrightness();
+                    else
+                        threshold_val = vidPixels.getColor(i, j).getLightness(); // TODO: make selectable
+                    CircleControls::checkThreshold(i, j, threshold_val);
+                }
+            }
+        }
+
+        // ----------------- naturally decrease life_cycle: ------------
+        for (int i = 0; i < CircleControls::circles.size(); i++)
+        {
+            Circle *circle = CircleControls::circles.at(i);
+            circle->life_cycle -= CircleControls::circles_shrink_factor;
+            if (circle->life_cycle <= 0)
+            {
+                CircleControls::circles.erase(CircleControls::circles.begin() + i);
+                CircleControls::circle_list[circle->x][circle->y] = false;
             }
         }
     }
-
-    // ------------------------- naturally decrease life_cycle: -----------------
-    for (int i = 0; i < CircleControls::circles.size(); i++)
-    {
-        Circle *circle = CircleControls::circles.at(i);
-        circle->life_cycle -= CircleControls::circles_shrink_factor;
-        if (circle->life_cycle <= 0)
-        {
-            CircleControls::circles.erase(CircleControls::circles.begin() + i);
-            CircleControls::circle_list[circle->x][circle->y] = false;
-        }
-    }
+    else
+        CircleControls::circles.clear();
 }
 
-//--------------------------------------------------------------
+// --------------------------------------------------------------------
 void ofApp::draw()
 {
     ofBackground(0);
 
-    if (show_video)
+    if (Globals::showVideo)
     {
         ofNoFill();
         ofSetColor(255, 255, 255); // reset color for video (else affected by circles-color)
@@ -154,10 +160,20 @@ void ofApp::draw()
         vector<Vec4i> lines;
         HoughLinesP(mat, lines, 120, CV_PI / 180, LineDetection::lineThreshold, LineDetection::minLineLength, LineDetection::maxLineGap); // (E,Rres,Thetares,Threshold,minLineLength,maxLineGap)
         ofSetColor(255, 0, 0);
+
+        // static float count = 0;
+        // static float hue = 0;
+        // count += 0.01;
+        // hue = sin(count);
+        // cout << hue << endl;
+
         for (int i = 0; i < lines.size(); i++)
         {
-            ofColor col = Globals::video.getPixels().getColor(lines[i][0], lines[i][1]);
-            ofSetColor(col);
+
+            ofColor col = ofColor(0);
+            // ofSetColor(Globals::video.getPixels().getColor(lines[i][0], lines[i][1]));
+            // col.setHsb(hue * 255, 250, 250);
+            // ofSetColor(col);
 
             float x1 = lines[i][0];
             float y1 = lines[i][1];
@@ -167,6 +183,8 @@ void ofApp::draw()
             l.addVertex(x1, y1);
             l.addVertex(x2, y2);
 
+            col.setHsb(l.getLengthAtIndex(l.getIndexAtPercent(1)), 255, 255);
+            ofSetColor(col);
             l.draw();
         }
     }
@@ -256,21 +274,6 @@ void ofApp::keyReleased(int key)
     {
         ofToggleFullscreen();
     }
-
-    else if (key == 'v')
-    {
-        show_video = !show_video;
-    }
-
-    else if (key == 'c')
-    {
-        CircleControls::draw_circles = !CircleControls::draw_circles;
-    }
-
-    // else if (key == ' ')
-    // {
-    //     spacebar_lock = false;
-    // }
 }
 
 //--------------------------------------------------------------

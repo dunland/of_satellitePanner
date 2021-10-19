@@ -96,6 +96,7 @@ void CircleControls::resize_circles()
 }
 /////////////////////////////// GLOBALS ///////////////////////////////
 ofVideoPlayer Globals::video;
+bool Globals::showVideo = false;
 
 /////////////////////////// LINE DETECTION ////////////////////////////
 bool LineDetection::drawLines = true;

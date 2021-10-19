@@ -12,6 +12,7 @@ void consoleApp::setup()
     gui_main.setup();
     gui_main.add(gui_main_drawCircles.setup("draw circles?", true));
     gui_main.add(gui_main_drawLines.setup("draw lines?", true));
+    gui_main.add(gui_main_showVideo.setup("show video?", false));
     gui_main.setPosition(0,100);
 
     // circles:
@@ -37,6 +38,10 @@ void consoleApp::setup()
 void consoleApp::update()
 {
     // ------------ update gui/global variables -----------------------
+    CircleControls::draw_circles = gui_main_drawCircles;
+    LineDetection::drawLines = gui_main_drawLines;
+    Globals::showVideo = gui_main_showVideo;
+
     CircleControls::circles_radius = gui_circleRadius;
     CircleControls::spawn_threshold = gui_spawn_threshold;
     CircleControls::circles_grow_factor = gui_circleGrowFactor;
@@ -60,9 +65,6 @@ void consoleApp::update()
         CircleControls::spawn_index = (CircleControls::spawn_index + 1) % CircleControls::spawn_mode.size();
         guiChangeSpawnMode = false;
     }
-
-    CircleControls::draw_circles = gui_main_drawCircles;
-    LineDetection::drawLines = gui_main_drawLines;
 
     // ----------------------------------------------------------------
     // kill circles if fr < 30

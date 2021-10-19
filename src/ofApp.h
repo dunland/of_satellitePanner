@@ -39,9 +39,6 @@ public:
 
 	ofxOscReceiver receiver;
 
-	bool use_video = true;
-	bool show_video = false; // toggles video on/off
-
 	Circle *circles_list[1920][1080]; // TODO: work with circles matrix instead of vector
 
 	bool spacebar_lock = false;

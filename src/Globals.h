@@ -56,6 +56,7 @@ class Globals
 {
 public:
     static ofVideoPlayer video;
+	static bool showVideo; // toggles video on/off
 };
 
 class LineDetection
