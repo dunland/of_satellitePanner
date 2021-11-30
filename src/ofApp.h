@@ -8,6 +8,7 @@
 #include "ofxCv.h"
 #include "ofxOpenCv.h"
 #include "ofxGui.h"
+#include "ofxFFmpegRecorder.h"
 
 using namespace cv;
 using namespace ofxCv;
@@ -33,22 +34,28 @@ public:
 	void dragEvent(ofDragInfo dragInfo);
 	void gotMessage(ofMessage msg);
 
+	// Sound:
+	ofSoundStream soundStream;
 	void audioSetup(int deviceNum);
 
-	ofSoundStream soundStream;
+	// Video recording:
+	ofxFFmpegRecorder m_Recorder;
+	ofVideoGrabber m_Grabber;
+
+	ofFbo mCapFbo;
+	ofPixels mPix;
 
 	ofxOscReceiver receiver;
 
-	Circle *circles_list[1920][1080]; // TODO: work with circles matrix instead of vector
-
 	bool spacebar_lock = false;
 
+	// video:
 	float vidWidth;
 	float vidHeight;
 
-    // edge and line detection:
+	// edge and line detection:
 	ofxCvColorImage colorImg;
-    ofxCvGrayscaleImage grayImg;
+	ofxCvGrayscaleImage grayImg;
 
-    ofImage img, edge_img, sobel_img;
+	ofImage img, edge_img, sobel_img;
 };

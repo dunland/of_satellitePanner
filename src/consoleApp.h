@@ -30,6 +30,7 @@ public:
 	ofxToggle gui_main_drawCircles;
 	ofxToggle gui_main_drawLines;
 	ofxToggle gui_main_showVideo;
+	ofxToggle gui_main_automaticParams;
 
 	// GUI for circles:
 	ofxPanel gui_circles;

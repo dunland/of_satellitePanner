@@ -5,6 +5,8 @@
 //--------------------------------------------------------------
 void ofApp::setup()
 {
+
+    ofSetFrameRate(30);
     ofSetWindowTitle("ofApp");
 
     // receiver.setup(PORT);
@@ -13,9 +15,11 @@ void ofApp::setup()
 
     // audioSetup(2);
 
-    Globals::video.load("20210930_Flaggenwind.mp4");
-    Globals::video.load("20211010_SF-Küste_00.mp4");
-    Globals::video.load("satellite_panner.mp4");
+    // Globals::video.load("20210930_Flaggenwind.mp4");
+    // Globals::video.load("20211010_SF-Küste_00.mp4");
+    // Globals::video.load("satellite_panner.mp4");
+    // Globals::video.load("IMGP2871_DunkelwellenUndEinGespraech.AVI");
+    Globals::video.load("/home/dav/2021/LichterDerNeustadt/bremen_1920x32000_1x5000_contrast_10min_cut.mp4");
 
     vidWidth = Globals::video.getWidth();
     vidHeight = Globals::video.getHeight();
@@ -25,18 +29,23 @@ void ofApp::setup()
     colorImg.allocate(vidWidth, vidHeight);
     grayImg.allocate(vidWidth, vidHeight);
 
-    // create circles initially:
-    // for (int i = CircleControls::circles_radius * 2; i < vidWidth - CircleControls::circles_radius * 2; i += CircleControls::circles_radius * 2)
-    // {
-    //     for (int j = CircleControls::circles_radius * 2; j < vidHeight - CircleControls::circles_radius * 2; j += CircleControls::circles_radius * 2)
-    //     {
-    //         if (ofRandom(0, 1) > CircleControls::circles_probability)
-    //         {
-    //             CircleControls::circles.push_back(new Circle(i, j, CircleControls::circles_radius));
-    //             CircleControls::circle_list[i][j] = true;
-    //         }
-    //     }
-    // }
+    // setup video grabber:
+    m_Grabber.setup(vidWidth, vidHeight);
+    mCapFbo.allocate(m_Grabber.getWidth(), m_Grabber.getHeight(), GL_RGB);
+
+    m_Recorder.setup(true, false, glm::vec2(m_Grabber.getWidth(), m_Grabber.getHeight()));
+    m_Recorder.setOverWrite(true);
+    m_Recorder.setVideoCodec("libx264");
+
+    /**
+     * You can also use the following methods to crop the output file
+     *     m_Recorder.addAdditionalOutputArgument("-vf \"crop=300:300:0:0\"");
+     * Or you can change the output codec
+     *     m_Recorder.setVideCodec("libx264");
+     **/
+
+    // initial circle creation:
+    // Circlecontrols::initialCircleCreation(vidWidth, vidHeight);
 }
 
 //--------------------------------------------------------------
@@ -55,6 +64,7 @@ void ofApp::update()
 
     // video ---------------------------------------------------
     Globals::video.update();
+    m_Grabber.update();
 
     colorImg.setFromPixels(Globals::video.getPixels());
     colorImg.convertToGrayscalePlanarImage(grayImg, 0);
@@ -143,67 +153,87 @@ void ofApp::update()
 // --------------------------------------------------------------------
 void ofApp::draw()
 {
-    ofBackground(0);
 
-    if (Globals::showVideo)
-    {
-        ofNoFill();
-        ofSetColor(255, 255, 255); // reset color for video (else affected by circles-color)
-        Globals::video.draw(0, 0);
-    }
+    mCapFbo.begin();
+    { // write everything to buffer
 
-    // ---------------------------- LINE DETECTION --------------------
-    if (LineDetection::drawLines)
-    {
-        Mat mat = toCv(edge_img);
+        ofBackground(0);
 
-        vector<Vec4i> lines;
-        HoughLinesP(mat, lines, 120, CV_PI / 180, LineDetection::lineThreshold, LineDetection::minLineLength, LineDetection::maxLineGap); // (E,Rres,Thetares,Threshold,minLineLength,maxLineGap)
-        ofSetColor(255, 0, 0);
-
-        // static float count = 0;
-        // static float hue = 0;
-        // count += 0.01;
-        // hue = sin(count);
-        // cout << hue << endl;
-
-        for (int i = 0; i < lines.size(); i++)
+        if (Globals::showVideo)
         {
+            ofNoFill();
+            ofSetColor(255, 255, 255); // reset color for video (else affected by circles-color)
+            Globals::video.draw(0, 0);
+        }
 
-            ofColor col = ofColor(0);
-            // ofSetColor(Globals::video.getPixels().getColor(lines[i][0], lines[i][1]));
-            // col.setHsb(hue * 255, 250, 250);
-            // ofSetColor(col);
+        // ---------------------------- LINE DETECTION --------------------
+        if (LineDetection::drawLines)
+        {
+            Mat mat = toCv(edge_img);
 
-            float x1 = lines[i][0];
-            float y1 = lines[i][1];
-            float x2 = lines[i][2];
-            float y2 = lines[i][3];
-            ofPolyline l;
-            l.addVertex(x1, y1);
-            l.addVertex(x2, y2);
+            vector<Vec4i> lines;
+            HoughLinesP(mat, lines, 120, CV_PI / 180, LineDetection::lineThreshold, LineDetection::minLineLength, LineDetection::maxLineGap); // (E,Rres,Thetares,Threshold,minLineLength,maxLineGap)
+            ofSetColor(255, 0, 0);
 
-            col.setHsb(l.getLengthAtIndex(l.getIndexAtPercent(1)), 255, 255);
-            ofSetColor(col);
-            l.draw();
+            // static float count = 0;
+            // static float hue = 0;
+            // count += 0.01;
+            // hue = sin(count);
+            // cout << hue << endl;
+
+            for (int i = 0; i < lines.size(); i++)
+            {
+
+                ofColor col = ofColor(0);
+                // ofSetColor(Globals::video.getPixels().getColor(lines[i][0], lines[i][1]));
+                // col.setHsb(hue * 255, 250, 250);
+                // ofSetColor(col);
+
+                float x1 = lines[i][0];
+                float y1 = lines[i][1];
+                float x2 = lines[i][2];
+                float y2 = lines[i][3];
+                ofPolyline l;
+                l.addVertex(x1, y1);
+                l.addVertex(x2, y2);
+
+                col.setHsb(l.getLengthAtIndex(l.getIndexAtPercent(1)), 255, 255);
+                ofSetColor(col);
+                l.draw();
+            }
+        }
+
+        // ---------------------------- CIRCLES  --------------------------
+        ofPixels &vidPixels = Globals::video.getPixels();
+
+        for (auto &circle : CircleControls::circles)
+        {
+            circle->color = vidPixels.getColor(circle->x, circle->y);
+            if (CircleControls::draw_circles)
+                circle->draw();
+        }
+
+        if (Globals::video.getIsMovieDone())
+        {
+            ofSetHexColor(0xFF0000);
+            ofDrawBitmapString("end of movie", 20, 440);
+        }
+    } // buffer end
+    mCapFbo.end();
+
+    // write buffer to file
+    if (m_Recorder.isRecording())
+    {
+        // ofxFastFboReader can be used to speed this up :)
+        mCapFbo.readToPixels(mPix);
+        if (mPix.getWidth() > 0 && mPix.getHeight() > 0)
+        {
+            m_Recorder.addFrame(mPix);
         }
     }
 
-    // ---------------------------- CIRCLES  --------------------------
-    ofPixels &vidPixels = Globals::video.getPixels();
-
-    for (auto &circle : CircleControls::circles)
-    {
-        circle->color = vidPixels.getColor(circle->x, circle->y);
-        if (CircleControls::draw_circles)
-            circle->draw();
-    }
-
-    if (Globals::video.getIsMovieDone())
-    {
-        ofSetHexColor(0xFF0000);
-        ofDrawBitmapString("end of movie", 20, 440);
-    }
+    // draw buffer
+    mCapFbo.draw(0, 0);
 }
 
 //--------------------------------------------------------------
@@ -230,33 +260,58 @@ void ofApp::keyPressed(int key)
         int r = CircleControls::circles_radius;
 
         // only create circles if frameRate > 30
-        if (ofGetFrameNum() > 1 && ofGetFrameRate() > 30)
+        // if (ofGetFrameNum() > 1 && ofGetFrameRate() > 30)
+        // {
+        // --------------------------- pixel brightness: ----------------------------
+        for (int i = r * 2; i < vidWidth; i += r * 2)
         {
-            // --------------------------- pixel brightness: ----------------------------
-            for (int i = r * 2; i < vidWidth; i += r * 2)
+            for (int j = r * 2; j < vidHeight; j += r * 2)
             {
-                for (int j = r * 2; j < vidHeight; j += r * 2)
-                {
-                    float threshold_val;
-                    if (CircleControls::spawn_mode[CircleControls::spawn_index] == "brightness")
-                        threshold_val = vidPixels.getColor(i, j).getBrightness();
-                    else
-                        threshold_val = vidPixels.getColor(i, j).getLightness(); // TODO: make selectable
-                    CircleControls::checkThreshold(i, j, threshold_val);
-                }
+                float threshold_val;
+                if (CircleControls::spawn_mode[CircleControls::spawn_index] == "brightness")
+                    threshold_val = vidPixels.getColor(i, j).getBrightness();
+                else
+                    threshold_val = vidPixels.getColor(i, j).getLightness(); // TODO: make selectable
+                CircleControls::checkThreshold(i, j, threshold_val);
             }
         }
+        // }
     }
 }
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key)
 {
-    if (key == 'r')
+    if (key == 'c')
     {
         CircleControls::circles_radius = ofRandom(2, 10);
         CircleControls::resize_circles();
     }
+
+    else if (key == 'f')
+    {
+        ofToggleFullscreen();
+    }
+
+    if (key == 'r')
+    {
+
+        if (m_Recorder.isRecording())
+        {
+            // stop
+            m_Recorder.stop();
+        }
+        else
+        {
+#if defined(TARGET_OSX)
+            m_Recorder.setOutputPath(ofToDataPath(ofGetTimestampString() + ".mp4", true));
+#else
+            m_Recorder.setOutputPath(ofToDataPath(ofGetTimestampString() + ".avi", true));
+#endif
+            m_Recorder.startCustomRecord();
+        }
+    }
+
     else if (key == '+')
     {
         CircleControls::circles_radius += CircleControls::circles_radius * 0.3;
@@ -268,11 +323,6 @@ void ofApp::keyReleased(int key)
         // if (CircleControls::circles_radius < CircleControls::circles_radius_standard)
         //     CircleControls::circles_radius = CircleControls::circles_radius_standard;
         CircleControls::resize_circles();
-    }
-
-    else if (key == 'f')
-    {
-        ofToggleFullscreen();
     }
 }
 
