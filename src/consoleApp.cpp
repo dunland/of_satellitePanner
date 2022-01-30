@@ -11,17 +11,17 @@ void consoleApp::setup()
     // main gui:
     gui_main.setup();
     gui_main.add(gui_main_drawCircles.setup("draw circles?", true));
-    gui_main.add(gui_main_drawLines.setup("draw lines?", true));
+    gui_main.add(gui_main_drawLines.setup("draw lines?", false));
     gui_main.add(gui_main_showVideo.setup("show video?", false));
     gui_main.setPosition(0,100);
 
     // circles:
     gui_circles.setup();
     gui_circles.add(gui_spawn_threshold.setup("spawn threshold", 180, 0, 255));
-    gui_circles.add(gui_circleSpawnProbability.setup("spawn probability", 0.1, 0, 1));
-    gui_circles.add(gui_circleRadius.setup("circle radius", 7, 2, 100));
-    gui_circles.add(gui_circleShrinkFactor.setup("circle shrink factor", 0.1, 0, 10));
-    gui_circles.add(gui_circleGrowFactor.setup("circle grow factor", 1, 0, 10));
+    gui_circles.add(CircleControls::spawnProbability.set("spawn probability", 0.1, 0, 1));
+    gui_circles.add(CircleControls::radius.set("circle radius", 7, 2, 100));
+    gui_circles.add(CircleControls::shrinkFactor.set("circle shrink factor", 0.1, 0, 10));
+    gui_circles.add(CircleControls::growFactor.set("circle grow factor", 1, 0, 10));
     gui_circles.add(guiChangeSpawnMode.setup("toggle spawn mode", false));
     gui_circles.setPosition(0, 200);
 
@@ -42,11 +42,11 @@ void consoleApp::update()
     LineDetection::drawLines = gui_main_drawLines;
     Globals::showVideo = gui_main_showVideo;
 
-    CircleControls::circles_radius = gui_circleRadius;
+    // CircleControls::radius = gui_circleRadius;
     CircleControls::spawn_threshold = gui_spawn_threshold;
-    CircleControls::circles_grow_factor = gui_circleGrowFactor;
-    CircleControls::circles_shrink_factor = gui_circleShrinkFactor;
-    gui_circleSpawnProbability.setMax(ofGetFrameRate() / 60);
+    // CircleControls::circles_grow_factor = gui_circleGrowFactor;
+    // CircleControls::shrinkFactor = gui_circleShrinkFactor;
+    // gui_circleSpawnProbability.setMax(ofGetFrameRate() / 60);
 
     LineDetection::edgeThreshold = gui2_edgeThreshold;
     LineDetection::lineThreshold = gui2_lineThreshold;
@@ -54,10 +54,10 @@ void consoleApp::update()
     LineDetection::maxLineGap = gui2_maxLineGap;
 
     // framerate-related spawn probability:
-    if (CircleControls::circles_probability > gui_circleSpawnProbability.getMax())
-        CircleControls::circles_probability = gui_circleSpawnProbability.getMax();
-    else
-        CircleControls::circles_probability = gui_circleSpawnProbability;
+    // if (CircleControls::spawnProbability > gui_circleSpawnProbability.getMax())
+    //     CircleControls::spawnProbability = gui_circleSpawnProbability.getMax();
+    // else
+    //     CircleControls::spawnProbability = gui_circleSpawnProbability;
 
     // toggle spawn mode according to pixel brightness/lightness
     if (guiChangeSpawnMode)

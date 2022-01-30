@@ -6,9 +6,9 @@ void Circle::draw()
 {
     color.set(color.r, color.g, color.b, life_cycle);
     if (CircleControls::spawn_mode[CircleControls::spawn_index] == "brightness")
-        radius = color.getBrightness() / 255 * CircleControls::circles_radius;
+        radius = color.getBrightness() / 255 * CircleControls::radius;
     else if (CircleControls::spawn_mode[CircleControls::spawn_index] == "lightness")
-        radius = color.getLightness() / 255 * CircleControls::circles_radius;
+        radius = color.getLightness() / 255 * CircleControls::radius;
     ofSetColor(color);
     ofFill();
     ofDrawCircle(x - radius, y - radius, radius);
@@ -19,14 +19,14 @@ void Circle::draw()
 std::vector<Circle *> CircleControls::circles;
 bool CircleControls::circle_list[1920][1080]; // place holder to keep track where circles are
 
-float CircleControls::circles_radius_standard = 5; // this is the value the dot size will fall back to
-float CircleControls::circles_radius = 7;          // actual (temporary) dot radius
+float CircleControls::radius_standard = 5; // this is the value the dot size will fall back to
+ofParameter<int> CircleControls::radius = 7;          // actual (temporary) dot radius
 
-float CircleControls::circles_grow_factor = 1;
-float CircleControls::circles_shrink_factor = 0.1;
+ofParameter<float> CircleControls::growFactor = 1;
+ofParameter<float> CircleControls::shrinkFactor = 0.1;
 
 bool CircleControls::draw_circles = true;
-float CircleControls::circles_probability = 0.3;
+ofParameter<float> CircleControls::spawnProbability = 0.3;
 
 int CircleControls::spawn_threshold = 180;
 int CircleControls::previous_spawn_threshold = CircleControls::spawn_threshold;
@@ -42,9 +42,9 @@ void CircleControls::checkThreshold(int x, int y, float threshold_val)
         // empty slot: create circle ----------------------------------
         if (circle_list[x][y] == false)
         {
-            if (ofRandom(0, 1) < CircleControls::circles_probability)
+            if (ofRandom(0, 1) < CircleControls::spawnProbability)
             {
-                CircleControls::circles.push_back(new Circle(x, y, CircleControls::circles_radius));
+                CircleControls::circles.push_back(new Circle(x, y, CircleControls::radius));
                 circle_list[x][y] = true;
             }
         }
@@ -73,7 +73,7 @@ void CircleControls::resize_circles()
     int vidWidth = vidPixels.getWidth();
     int vidHeight = vidPixels.getHeight();
 
-    int r = CircleControls::circles_radius;
+    int r = CircleControls::radius;
 
     // kill all existing circles:
     CircleControls::circles.clear();
@@ -86,7 +86,7 @@ void CircleControls::resize_circles()
     {
         for (int j = r * 3; j < vidHeight; j += r * 2)
         {
-            if (ofRandom(0, 1) < CircleControls::circles_probability)
+            if (ofRandom(0, 1) < CircleControls::spawnProbability)
             {
                 CircleControls::circles.push_back(new Circle(i, j, r));
                 CircleControls::circle_list[i][j] = true;

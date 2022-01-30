@@ -4,6 +4,7 @@
 #include <vector>
 #include <list>
 #include "ofxGui.h"
+#include "Globals.h"
 
 class consoleApp : public ofBaseApp
 {
@@ -33,11 +34,7 @@ public:
 
 	// GUI for circles:
 	ofxPanel gui_circles;
-	ofxIntSlider gui_circleRadius;
-	ofxFloatSlider gui_circleShrinkFactor;
-	ofxFloatSlider gui_circleGrowFactor;
 	ofxIntSlider gui_spawn_threshold;
-	ofxFloatSlider gui_circleSpawnProbability;
 	ofxToggle guiChangeSpawnMode;
 
 	// GUI for line detection:

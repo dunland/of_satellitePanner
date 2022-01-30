@@ -7,7 +7,7 @@ void ofApp::setup()
 {
     ofSetWindowTitle("ofApp");
 
-    // receiver.setup(PORT);
+    receiver.setup(PORT);
 
     ofSetCircleResolution(100);
 
@@ -26,32 +26,52 @@ void ofApp::setup()
     grayImg.allocate(vidWidth, vidHeight);
 
     // create circles initially:
-    // for (int i = CircleControls::circles_radius * 2; i < vidWidth - CircleControls::circles_radius * 2; i += CircleControls::circles_radius * 2)
+    // for (int i = CircleControls::radius * 2; i < vidWidth - CircleControls::radius * 2; i += CircleControls::radius * 2)
     // {
-    //     for (int j = CircleControls::circles_radius * 2; j < vidHeight - CircleControls::circles_radius * 2; j += CircleControls::circles_radius * 2)
+    //     for (int j = CircleControls::radius * 2; j < vidHeight - CircleControls::radius * 2; j += CircleControls::radius * 2)
     //     {
-    //         if (ofRandom(0, 1) > CircleControls::circles_probability)
+    //         if (ofRandom(0, 1) > CircleControls::spawnProbability)
     //         {
-    //             CircleControls::circles.push_back(new Circle(i, j, CircleControls::circles_radius));
+    //             CircleControls::circles.push_back(new Circle(i, j, CircleControls::radius));
     //             CircleControls::circle_list[i][j] = true;
     //         }
     //     }
     // }
+
+    for (int i = 0; i< sizeof(midiParams); i++)
+    midiParams[i] = 0;
 }
 
 //--------------------------------------------------------------
 void ofApp::update()
 {
     // OSC -----------------------------------------------------
-    // ofxOscMessage message;
-    // static ofxOscMessage previous_message = message;
-    // receiver.getNextMessage(message);
+    static int channel;
+    static int value;
+    while (receiver.hasWaitingMessages())
+    {
+        ofxOscMessage message;
+        receiver.getNextMessage(message);
 
-    // if (message != previous_message)
-    // {
-    // cout << message.getArgAsInt(0) << endl;
-    // previous_message = message;
-    // }
+        if (message.getAddress() == "/midi/channel/")
+        {
+            ofLogNotice(message.getAddress());
+            ofLogNotice(ofToString(message.getArgAsInt(0)));
+            channel = message.getArgAsInt(0);
+        }
+        else if (message.getAddress() == "/midi/value/")
+        {
+            ofLogNotice(message.getAddress());
+            ofLogNotice(ofToString(message.getArgAsInt(0)));
+            value = message.getArgAsInt(0);
+        }
+        midiParams[channel] = value;
+
+        CircleControls::radius.set(midiParams[16]);
+        CircleControls::spawnProbability.set(float(midiParams[17]) / 127);
+        CircleControls::shrinkFactor.set(float(midiParams[18]) / 127 * 10);
+        CircleControls::growFactor.set(float(midiParams[19]) / 127 * 10);
+    }
 
     // video ---------------------------------------------------
     Globals::video.update();
@@ -65,7 +85,7 @@ void ofApp::update()
 
     ofPixels &vidPixels = Globals::video.getPixels();
 
-    int r = CircleControls::circles_radius;
+    int r = CircleControls::radius;
 
     // TODO: do this only for neighboring circles of already existent ones
 
@@ -128,7 +148,7 @@ void ofApp::update()
         for (int i = 0; i < CircleControls::circles.size(); i++)
         {
             Circle *circle = CircleControls::circles.at(i);
-            circle->life_cycle -= CircleControls::circles_shrink_factor;
+            circle->life_cycle -= CircleControls::shrinkFactor;
             if (circle->life_cycle <= 0)
             {
                 CircleControls::circles.erase(CircleControls::circles.begin() + i);
@@ -227,7 +247,7 @@ void ofApp::keyPressed(int key)
         int vidWidth = vidPixels.getWidth();
         int vidHeight = vidPixels.getHeight();
 
-        int r = CircleControls::circles_radius;
+        int r = CircleControls::radius;
 
         // only create circles if frameRate > 30
         if (ofGetFrameNum() > 1 && ofGetFrameRate() > 30)
@@ -254,19 +274,19 @@ void ofApp::keyReleased(int key)
 {
     if (key == 'r')
     {
-        CircleControls::circles_radius = ofRandom(2, 10);
+        CircleControls::radius = ofRandom(2, 10);
         CircleControls::resize_circles();
     }
     else if (key == '+')
     {
-        CircleControls::circles_radius += CircleControls::circles_radius * 0.3;
+        CircleControls::radius += CircleControls::radius * 0.3;
         CircleControls::resize_circles();
     }
     else if (key == '-')
     {
-        CircleControls::circles_radius -= CircleControls::circles_radius * 0.3;
-        // if (CircleControls::circles_radius < CircleControls::circles_radius_standard)
-        //     CircleControls::circles_radius = CircleControls::circles_radius_standard;
+        CircleControls::radius -= CircleControls::radius * 0.3;
+        // if (CircleControls::radius < CircleControls::radius_standard)
+        //     CircleControls::radius = CircleControls::radius_standard;
         CircleControls::resize_circles();
     }
 
@@ -324,19 +344,19 @@ void ofApp::dragEvent(ofDragInfo dragInfo)
 //--------------------------------------------------------------
 void ofApp::audioSetup(int deviceNum)
 {
-    cout << ofSoundStreamListDevices() << endl;
-    // ofSoundStream::setDevice(2);
-    ofSoundStreamSetup(2, 0, 48000, 256, 4);
+    // cout << ofSoundStreamListDevices() << endl;
+    // // ofSoundStream::setDevice(2);
+    // ofSoundStreamSetup(2, 0, 48000, 256, 4);
 
-    auto devices = soundStream.getDeviceList();
+    // auto devices = soundStream.getDeviceList();
 
-    ofSoundStreamSettings settings;
-    settings.setOutDevice(devices[deviceNum]);
+    // ofSoundStreamSettings settings;
+    // settings.setOutDevice(devices[deviceNum]);
 
-    settings.setOutListener(this);
-    settings.sampleRate = 48000;
-    settings.numOutputChannels = 2;
-    settings.numInputChannels = 0;
-    settings.bufferSize = 256;
-    soundStream.setup(settings);
+    // settings.setOutListener(this);
+    // settings.sampleRate = 48000;
+    // settings.numOutputChannels = 2;
+    // settings.numInputChannels = 0;
+    // settings.bufferSize = 256;
+    // soundStream.setup(settings);
 }
