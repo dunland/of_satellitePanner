@@ -15,12 +15,16 @@ void ofApp::setup()
 
     // audioSetup(2);
 
-    // Globals::video.load("20210930_Flaggenwind.mp4");
-    // Globals::video.load("20211010_SF-Küste_00.mp4");
-    // Globals::video.load("satellite_panner.mp4");
-    // Globals::video.load("IMGP2871_DunkelwellenUndEinGespraech.AVI");
-    Globals::video.load("/home/dav/2021/LichterDerNeustadt/bremen_1920x32000_1x5000_contrast_10min_cut.mp4");
+    // load videos from data folder
+    ofDirectory dir(""); // read folder ./bin/data
+    dir.allowExt("mp4");
+    dir.allowExt("avi");
+    dir.listDir();
+    dir = dir.getSorted();
+    for (int i = 0; i < dir.size(); i++)
+        Globals::videoPaths.push_back(dir.getPath(i));
 
+    Globals::video.load(Globals::videoPaths[Globals::videoPaths.size() - 1]);
     vidWidth = Globals::video.getWidth();
     vidHeight = Globals::video.getHeight();
 
@@ -42,8 +46,8 @@ void ofApp::setup()
     //     }
     // }
 
-    for (int i = 0; i< sizeof(midiParams); i++)
-    midiParams[i] = 0;
+    for (int i = 0; i < sizeof(midiParams); i++)
+        midiParams[i] = 0;
 }
 
 //--------------------------------------------------------------
@@ -338,6 +342,20 @@ void ofApp::keyReleased(int key)
         // if (CircleControls::radius < CircleControls::radius_standard)
         //     CircleControls::radius = CircleControls::radius_standard;
         CircleControls::resize_circles();
+    }
+
+    else if (key == OF_KEY_RETURN) // load next video
+    {
+        Globals::vidIdx = (Globals::vidIdx + 1) % Globals::videoPaths.size();
+        Globals::video.load(Globals::videoPaths[Globals::vidIdx]);
+
+        vidWidth = Globals::video.getWidth();
+        vidHeight = Globals::video.getHeight();
+
+        Globals::video.play();
+
+        colorImg.allocate(vidWidth, vidHeight);
+        grayImg.allocate(vidWidth, vidHeight);
     }
 }
 

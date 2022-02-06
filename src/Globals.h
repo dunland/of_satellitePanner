@@ -56,6 +56,8 @@ public:
 class Globals
 {
 public:
+    static vector<string> videoPaths;
+    static int vidIdx;
     static ofVideoPlayer video;
 	static bool showVideo; // toggles video on/off
 };

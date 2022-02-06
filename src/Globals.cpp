@@ -68,13 +68,13 @@ void CircleControls::checkThreshold(int x, int y, float threshold_val)
 void CircleControls::initialCircleCreation(int vidWidth, int vidHeight)
 {
     // create circles initially :
-    for (int i = CircleControls::circles_radius * 2; i < vidWidth - CircleControls::circles_radius * 2; i += CircleControls::circles_radius * 2)
+    for (int i = CircleControls::radius * 2; i < vidWidth - CircleControls::radius * 2; i += CircleControls::radius * 2)
     {
-        for (int j = CircleControls::circles_radius * 2; j < vidHeight - CircleControls::circles_radius * 2; j += CircleControls::circles_radius * 2)
+        for (int j = CircleControls::radius * 2; j < vidHeight - CircleControls::radius * 2; j += CircleControls::radius * 2)
         {
-            if (ofRandom(0, 1) > CircleControls::circles_probability)
+            if (ofRandom(0, 1) > CircleControls::spawnProbability)
             {
-                CircleControls::circles.push_back(new Circle(i, j, CircleControls::circles_radius));
+                CircleControls::circles.push_back(new Circle(i, j, CircleControls::radius));
                 CircleControls::circle_list[i][j] = true;
             }
         }
@@ -111,7 +111,9 @@ void CircleControls::resize_circles()
     }
 }
 /////////////////////////////// GLOBALS ///////////////////////////////
+vector<string> Globals::videoPaths;
 ofVideoPlayer Globals::video;
+int Globals::vidIdx = 0;
 bool Globals::showVideo = false;
 
 /////////////////////////// LINE DETECTION ////////////////////////////

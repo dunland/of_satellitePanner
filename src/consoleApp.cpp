@@ -77,7 +77,7 @@ void consoleApp::update()
         // gui_circleSpawnProbability = abs(sin(ofGetElapsedTimef() * circleSpawnProbabilityFrequency));
 
         static float circleRadiusFrequency = ofRandom((5/600), (10/600)); // 5-10 cycles
-        gui_circleRadius = 10 + abs(sin(ofGetElapsedTimef() * circleRadiusFrequency)) * 50;
+        CircleControls::radius = 10 + abs(sin(ofGetElapsedTimef() * circleRadiusFrequency)) * 50;
 
         // static float circleShrinkFrequency = ofRandom(0.033, 0.066); // 20-40 cycles
         // gui_circleShrinkFactor = abs(sin(ofGetElapsedTimef() * circleShrinkFrequency)) * 10;
