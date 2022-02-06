@@ -14,8 +14,8 @@ void ofApp::setup()
     // audioSetup(2);
 
     Globals::video.load("20210930_Flaggenwind.mp4");
-    Globals::video.load("20211010_SF-Küste_00.mp4");
     Globals::video.load("satellite_panner.mp4");
+    Globals::video.load("20211010_SF-Küste_00.mp4");
 
     vidWidth = Globals::video.getWidth();
     vidHeight = Globals::video.getHeight();
@@ -67,7 +67,7 @@ void ofApp::update()
         }
         midiParams[channel] = value;
 
-        CircleControls::radius.set(midiParams[16]);
+        CircleControls::radius.set(max(midiParams[16], 1));
         CircleControls::spawnProbability.set(float(midiParams[17]) / 127);
         CircleControls::shrinkFactor.set(float(midiParams[18]) / 127 * 10);
         CircleControls::growFactor.set(float(midiParams[19]) / 127 * 10);
