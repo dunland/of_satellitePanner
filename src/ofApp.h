@@ -57,5 +57,7 @@ public:
 	ofxCvColorImage colorImg;
 	ofxCvGrayscaleImage grayImg;
 
-	ofImage img, edge_img, sobel_img;
+    ofImage img, edge_img, sobel_img;
+
+	int midiParams[128];
 };
