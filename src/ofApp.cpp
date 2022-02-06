@@ -46,8 +46,8 @@ void ofApp::setup()
     //     }
     // }
 
-    for (int i = 0; i < sizeof(midiParams); i++)
-        midiParams[i] = 0;
+    // for (int i = 0; i < sizeof(midiParams); i++)
+    //     midiParams[i] = 0;
 }
 
 //--------------------------------------------------------------

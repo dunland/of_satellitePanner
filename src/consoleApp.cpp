@@ -10,7 +10,7 @@ void consoleApp::setup()
 
     // main gui:
     gui_main.setup();
-    gui_main.add(gui_main_drawCircles.setup("draw circles?", true));
+    gui_main.add(gui_main_drawCircles.setup("draw circles?", false));
     gui_main.add(gui_main_drawLines.setup("draw lines?", false));
     gui_main.add(gui_main_showVideo.setup("show video?", false));
     gui_main.add(gui_main_automaticParams.setup("automatic params change?", false));
@@ -72,7 +72,7 @@ void consoleApp::update()
     {
         // static float circleSpawnThrehsoldFrequency = ofRandom(0.0033, 0.0066); // 20-40 cycles
         // gui_spawn_threshold = abs(sin(ofGetElapsedTimef() * circleSpawnThrehsoldFrequency)) * 100;
-        
+
         // static float circleSpawnProbabilityFrequency = ofRandom(0.016, 0.033); // 10-20 cycles
         // gui_circleSpawnProbability = abs(sin(ofGetElapsedTimef() * circleSpawnProbabilityFrequency));
 

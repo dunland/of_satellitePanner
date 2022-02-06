@@ -25,7 +25,7 @@ ofParameter<int> CircleControls::radius = 7;          // actual (temporary) dot 
 ofParameter<float> CircleControls::growFactor = 1;
 ofParameter<float> CircleControls::shrinkFactor = 0.1;
 
-bool CircleControls::draw_circles = true;
+bool CircleControls::draw_circles = false;
 ofParameter<float> CircleControls::spawnProbability = 0.3;
 
 int CircleControls::spawn_threshold = 180;
