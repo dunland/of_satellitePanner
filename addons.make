@@ -3,3 +3,4 @@ ofxGui
 ofxCv
 ofxGui
 ofxOpenCv
+ofxFFmpegRecorder

@@ -13,6 +13,7 @@ void consoleApp::setup()
     gui_main.add(gui_main_drawCircles.setup("draw circles?", true));
     gui_main.add(gui_main_drawLines.setup("draw lines?", false));
     gui_main.add(gui_main_showVideo.setup("show video?", false));
+    gui_main.add(gui_main_automaticParams.setup("automatic params change?", false));
     gui_main.setPosition(0,100);
 
     // circles:
@@ -64,6 +65,25 @@ void consoleApp::update()
     {
         CircleControls::spawn_index = (CircleControls::spawn_index + 1) % CircleControls::spawn_mode.size();
         guiChangeSpawnMode = false;
+    }
+
+    // automatic parameter changes:
+    if (gui_main_automaticParams)
+    {
+        // static float circleSpawnThrehsoldFrequency = ofRandom(0.0033, 0.0066); // 20-40 cycles
+        // gui_spawn_threshold = abs(sin(ofGetElapsedTimef() * circleSpawnThrehsoldFrequency)) * 100;
+        
+        // static float circleSpawnProbabilityFrequency = ofRandom(0.016, 0.033); // 10-20 cycles
+        // gui_circleSpawnProbability = abs(sin(ofGetElapsedTimef() * circleSpawnProbabilityFrequency));
+
+        static float circleRadiusFrequency = ofRandom((5/600), (10/600)); // 5-10 cycles
+        CircleControls::radius = 10 + abs(sin(ofGetElapsedTimef() * circleRadiusFrequency)) * 50;
+
+        // static float circleShrinkFrequency = ofRandom(0.033, 0.066); // 20-40 cycles
+        // gui_circleShrinkFactor = abs(sin(ofGetElapsedTimef() * circleShrinkFrequency)) * 10;
+
+        // static float circleGrowFrequency = ofRandom(0.033, 0.066) * 2; // 20-40 cycles
+        // gui_circleGrowFactor = abs(sin(ofGetElapsedTimef() * circleGrowFrequency)) * 10;
     }
 
     // ----------------------------------------------------------------
