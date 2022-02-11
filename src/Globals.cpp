@@ -25,10 +25,10 @@ ofParameter<int> CircleControls::radius = 7;          // actual (temporary) dot 
 ofParameter<float> CircleControls::growFactor = 1;
 ofParameter<float> CircleControls::shrinkFactor = 0.1;
 
-bool CircleControls::draw_circles = false;
+ofParameter<bool> CircleControls::draw_circles = false;
 ofParameter<float> CircleControls::spawnProbability = 0.3;
 
-int CircleControls::spawn_threshold = 180;
+ofParameter<int> CircleControls::spawn_threshold = 180;
 int CircleControls::previous_spawn_threshold = CircleControls::spawn_threshold;
 
 int CircleControls::spawn_index = 0;
@@ -114,12 +114,12 @@ void CircleControls::resize_circles()
 vector<string> Globals::videoPaths;
 ofVideoPlayer Globals::video;
 int Globals::vidIdx = 0;
-bool Globals::showVideo = false;
+ofParameter<bool> Globals::showVideo = false;
 
 /////////////////////////// LINE DETECTION ////////////////////////////
-bool LineDetection::drawLines = true;
+ofParameter<bool> LineDetection::drawLines = true;
 
-int LineDetection::edgeThreshold; //    Canny Edge Detection
-int LineDetection::lineThreshold; //    Hough Transform Lines
-int LineDetection::minLineLength;
-int LineDetection::maxLineGap;
+ofParameter <int> LineDetection::edgeThreshold; //    Canny Edge Detection
+ofParameter <int> LineDetection::lineThreshold; //    Hough Transform Lines
+ofParameter <int> LineDetection::minLineLength;
+ofParameter <int> LineDetection::maxLineGap;

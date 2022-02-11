@@ -10,15 +10,15 @@ void consoleApp::setup()
 
     // main gui:
     gui_main.setup();
-    gui_main.add(gui_main_drawCircles.setup("draw circles?", false));
-    gui_main.add(gui_main_drawLines.setup("draw lines?", false));
-    gui_main.add(gui_main_showVideo.setup("show video?", false));
+    gui_main.add(CircleControls::draw_circles.set("draw circles?", false));
+    gui_main.add(LineDetection::drawLines.set("draw lines?", false));
+    gui_main.add(Globals::showVideo.set("show video?", false));
     gui_main.add(gui_main_automaticParams.setup("automatic params change?", false));
     gui_main.setPosition(0,100);
 
     // circles:
     gui_circles.setup();
-    gui_circles.add(gui_spawn_threshold.setup("spawn threshold", 180, 0, 255));
+    gui_circles.add(CircleControls::spawn_threshold.set("spawn threshold", 180, 0, 255));
     gui_circles.add(CircleControls::spawnProbability.set("spawn probability", 0.1, 0, 1));
     gui_circles.add(CircleControls::radius.set("circle radius", 7, 2, 100));
     gui_circles.add(CircleControls::shrinkFactor.set("circle shrink factor", 0.1, 0, 10));
@@ -28,32 +28,16 @@ void consoleApp::setup()
 
     // lines:
     gui_lines.setup();
-    gui_lines.add(gui2_edgeThreshold.setup("Edge Threshold", 50, 0, 100));
-    gui_lines.add(gui2_lineThreshold.setup("Line Threshold", 150, 0, 200));
-    gui_lines.add(gui2_minLineLength.setup("min line length", 10, 0, 200));
-    gui_lines.add(gui2_maxLineGap.setup("max line gap", 10, 0, 200));
+    gui_lines.add(LineDetection::edgeThreshold.set("Edge Threshold", 50, 0, 100));
+    gui_lines.add(LineDetection::lineThreshold.set("Line Threshold", 150, 0, 200));
+    gui_lines.add(LineDetection::minLineLength.set("min line length", 10, 0, 200));
+    gui_lines.add(LineDetection::maxLineGap.set("max line gap", 10, 0, 200));
     gui_lines.setPosition(0, 350);
 }
 
 ///////////////////////////////////////////////////////////////////////
 void consoleApp::update()
 {
-    // ------------ update gui/global variables -----------------------
-    CircleControls::draw_circles = gui_main_drawCircles;
-    LineDetection::drawLines = gui_main_drawLines;
-    Globals::showVideo = gui_main_showVideo;
-
-    // CircleControls::radius = gui_circleRadius;
-    CircleControls::spawn_threshold = gui_spawn_threshold;
-    // CircleControls::circles_grow_factor = gui_circleGrowFactor;
-    // CircleControls::shrinkFactor = gui_circleShrinkFactor;
-    // gui_circleSpawnProbability.setMax(ofGetFrameRate() / 60);
-
-    LineDetection::edgeThreshold = gui2_edgeThreshold;
-    LineDetection::lineThreshold = gui2_lineThreshold;
-    LineDetection::minLineLength = gui2_minLineLength;
-    LineDetection::maxLineGap = gui2_maxLineGap;
-
     // framerate-related spawn probability:
     // if (CircleControls::spawnProbability > gui_circleSpawnProbability.getMax())
     //     CircleControls::spawnProbability = gui_circleSpawnProbability.getMax();

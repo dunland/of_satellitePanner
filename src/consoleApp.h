@@ -28,24 +28,12 @@ public:
 	// ------------------------------ GUI -----------------------------
 	// main GUI:
 	ofxPanel gui_main;
-	ofxToggle gui_main_drawCircles;
-	ofxToggle gui_main_drawLines;
-	ofxToggle gui_main_showVideo;
 	ofxToggle gui_main_automaticParams;
 
 	// GUI for circles:
 	ofxPanel gui_circles;
-	ofxIntSlider gui_spawn_threshold;
 	ofxToggle guiChangeSpawnMode;
 
 	// GUI for line detection:
 	ofxPanel gui_lines;
-
-	//    Canny Edge Detection
-	ofxIntSlider gui2_edgeThreshold;
-	//    Hough Transform Lines
-	ofxIntSlider gui2_lineThreshold;
-	ofxIntSlider gui2_minLineLength;
-	ofxIntSlider gui2_maxLineGap;
-
 };

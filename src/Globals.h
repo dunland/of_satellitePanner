@@ -29,13 +29,13 @@ class CircleControls
 {
 public:
     // general:
-    static bool draw_circles;
+    static ofParameter<bool> draw_circles;
     static float radius_standard; // this is the value the dot size will fall back to
     static ofParameter<int> radius;          // actual (temporary) dot radius
 
     // circle spawn:
     static ofParameter<float> spawnProbability;
-    static int spawn_threshold;
+    static ofParameter<int> spawn_threshold;
     static int previous_spawn_threshold;
     static int spawn_index;
     static vector<string> spawn_mode;
@@ -59,16 +59,16 @@ public:
     static vector<string> videoPaths;
     static int vidIdx;
     static ofVideoPlayer video;
-	static bool showVideo; // toggles video on/off
+	static ofParameter<bool> showVideo; // toggles video on/off
 };
 
 class LineDetection
 {
 public:
-    static bool drawLines;
+    static ofParameter<bool> drawLines;
 
-    static int edgeThreshold; //    Canny Edge Detection
-    static int lineThreshold; //    Hough Transform Lines
-    static int minLineLength;
-    static int maxLineGap;
+    static ofParameter<int> edgeThreshold; //    Canny Edge Detection
+    static ofParameter<int> lineThreshold; //    Hough Transform Lines
+    static ofParameter<int> minLineLength;
+    static ofParameter<int> maxLineGap;
 };
