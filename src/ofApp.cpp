@@ -9,13 +9,17 @@ void ofApp::setup()
     ofSetFrameRate(30);
     ofSetWindowTitle("ofApp");
 
+    // communication -------------------------------------------
     receiver.setup(PORT);
+    serial.setup("/dev/ttyACM0", 9600);
+    font.load("DIN.otf", 64);
 
+    // circles setup -------------------------------------------
     ofSetCircleResolution(100);
 
     // audioSetup(2);
 
-    // load videos from data folder
+    // load videos from data folder ----------------------------
     ofDirectory dir(""); // read folder ./bin/data
     dir.allowExt("mp4");
     dir.allowExt("avi");
@@ -81,6 +85,27 @@ void ofApp::update()
         CircleControls::growFactor.set(float(midiParams[19]) / 127 * 10);
     }
 
+    // Serial receive --------------------------------------------
+    nTimesRead = 0;
+    nBytesRead = 0;
+    int nRead = 0; // a temp variable to keep count per read
+
+    unsigned char bytesReturned[3];
+
+    memset(bytesReadString, 0, 4);
+    memset(bytesReturned, 0, 3);
+
+    while ((nRead = serial.readBytes(bytesReturned, 3)) > 0)
+    {
+        nTimesRead++;
+        nBytesRead = nRead;
+    };
+
+    memcpy(bytesReadString, bytesReturned, 3);
+
+    bSendSerialMessage = false;
+    readTime = ofGetElapsedTimef();
+
     // video ---------------------------------------------------
     Globals::video.update();
     m_Grabber.update();
@@ -91,7 +116,6 @@ void ofApp::update()
 
     Canny(grayImg, edge_img, LineDetection::edgeThreshold, LineDetection::edgeThreshold * 2);
     Sobel(edge_img, sobel_img);
-    
 
     // TODO: do this only for neighboring circles of already existent ones
 
@@ -254,6 +278,19 @@ void ofApp::draw()
 
     // draw buffer
     mCapFbo.draw(0, 0);
+
+    // draw Serial messages
+    if (nBytesRead > 0 && ((ofGetElapsedTimef() - readTime) < 0.5f))
+    {
+        ofSetColor(0);
+    }
+    else
+    {
+        ofSetColor(220);
+    }
+    string msg;
+    msg += "read: " + ofToString(bytesReadString) + "\n";
+    font.drawString(msg, 50, 100);
 }
 
 //--------------------------------------------------------------

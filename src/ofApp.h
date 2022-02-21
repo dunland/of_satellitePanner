@@ -57,7 +57,19 @@ public:
 	ofxCvColorImage colorImg;
 	ofxCvGrayscaleImage grayImg;
 
-    ofImage img, edge_img, sobel_img;
+	ofImage img, edge_img, sobel_img;
 
+	// communication:
 	int midiParams[128];
+
+	ofSerial serial;
+
+	bool bSendSerialMessage; // a flag for sending serial
+	char bytesRead[10];		 // data from serial, we will be trying to read 3
+	char bytesReadString[11]; // a string needs a null terminator, so we need 3 + 1 bytes
+	int nBytesRead;			 // how much did we read?
+	int nTimesRead;			 // how many times did we read?
+	float readTime;			 // when did we last read?
+
+	ofTrueTypeFont font;
 };
