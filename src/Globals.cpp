@@ -25,7 +25,8 @@ ofParameter<int> CircleControls::radius = 7;          // actual (temporary) dot 
 ofParameter<float> CircleControls::growFactor = 1;
 ofParameter<float> CircleControls::shrinkFactor = 0.1;
 
-ofParameter<bool> CircleControls::draw_circles = false;
+ofParameter<bool> CircleControls::bDrawCircles = true;
+ofParameter<bool> CircleControls::bAutomaticCircleCreation = true;
 ofParameter<float> CircleControls::spawnProbability = 0.3;
 
 ofParameter<int> CircleControls::spawn_threshold = 180;
@@ -37,44 +38,44 @@ vector<string> CircleControls::spawn_mode = {"brightness", "lightness"};
 // --------------------- check pixel brightness -----------------------
 void CircleControls::checkThreshold(int x, int y, float threshold_val)
 {
-    if (threshold_val > CircleControls::spawn_threshold)
+    if (threshold_val > spawn_threshold)
     {
         // empty slot: create circle ----------------------------------
-        if (circle_list[x][y] == false)
+        if (circle_list[x][y] == false && bAutomaticCircleCreation)
         {
-            if (ofRandom(0, 1) < CircleControls::spawnProbability)
+            if (ofRandom(0, 1) < spawnProbability)
             {
-                CircleControls::circles.push_back(new Circle(x, y, CircleControls::radius));
+                circles.push_back(new Circle(x, y, radius));
                 circle_list[x][y] = true;
             }
         }
         // occupied slot: get circle and do life_cycle++ --------------
         else
         {
-            Circle *this_circle;
             for (auto &circle : circles)
             {
                 if (circle->x == x && circle->y == y)
                 {
-                    this_circle = circle;
+                    circle->life_cycle++;
                     break;
                 }
             }
-            this_circle->life_cycle++;
         }
     }
 }
 
 void CircleControls::initialCircleCreation(int vidWidth, int vidHeight)
 {
+    int r = CircleControls::radius;
+
     // create circles initially :
-    for (int i = CircleControls::radius * 2; i < vidWidth - CircleControls::radius * 2; i += CircleControls::radius * 2)
+    for (int i = r * 2; i < vidWidth - r * 2; i += r * 2)
     {
-        for (int j = CircleControls::radius * 2; j < vidHeight - CircleControls::radius * 2; j += CircleControls::radius * 2)
+        for (int j = r * 2; j < vidHeight - r * 2; j += r * 2)
         {
             if (ofRandom(0, 1) > CircleControls::spawnProbability)
             {
-                CircleControls::circles.push_back(new Circle(i, j, CircleControls::radius));
+                CircleControls::circles.push_back(new Circle(i, j, r));
                 CircleControls::circle_list[i][j] = true;
             }
         }
@@ -115,6 +116,7 @@ vector<string> Globals::videoPaths;
 ofVideoPlayer Globals::video;
 int Globals::vidIdx = 0;
 ofParameter<bool> Globals::showVideo = false;
+
 
 /////////////////////////// LINE DETECTION ////////////////////////////
 ofParameter<bool> LineDetection::drawLines = true;

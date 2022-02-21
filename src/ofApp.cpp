@@ -91,10 +91,7 @@ void ofApp::update()
 
     Canny(grayImg, edge_img, LineDetection::edgeThreshold, LineDetection::edgeThreshold * 2);
     Sobel(edge_img, sobel_img);
-
-    ofPixels &vidPixels = Globals::video.getPixels();
-
-    int r = CircleControls::radius;
+    
 
     // TODO: do this only for neighboring circles of already existent ones
 
@@ -130,7 +127,11 @@ void ofApp::update()
 
     // TODO: opencv → circle creation only along lines!
 
-    if (CircleControls::draw_circles)
+    //----------------------------------- UPDATE CIRCLES --------------------------------
+    ofPixels &vidPixels = Globals::video.getPixels();
+    int r = CircleControls::radius;
+
+    if (CircleControls::bDrawCircles)
     {
 
         // naturally create one circle at a time:
@@ -148,7 +149,7 @@ void ofApp::update()
                         threshold_val = vidPixels.getColor(i, j).getBrightness();
                     else
                         threshold_val = vidPixels.getColor(i, j).getLightness(); // TODO: make selectable
-                    CircleControls::checkThreshold(i, j, threshold_val);
+                    CircleControls::checkThreshold(i, j, threshold_val);         // checks pixel brightness threshold and creates/increases circles
                 }
             }
         }
@@ -228,7 +229,7 @@ void ofApp::draw()
         for (auto &circle : CircleControls::circles)
         {
             circle->color = vidPixels.getColor(circle->x, circle->y);
-            if (CircleControls::draw_circles)
+            if (CircleControls::bDrawCircles)
                 circle->draw();
         }
 
@@ -356,6 +357,51 @@ void ofApp::keyReleased(int key)
 
         colorImg.allocate(vidWidth, vidHeight);
         grayImg.allocate(vidWidth, vidHeight);
+    }
+
+    if (key == ' ') // represents kick drum
+    {
+        ofPixels &vidPixels = Globals::video.getPixels();
+        int r = CircleControls::radius;
+
+        for (int i = r * 2; i < vidWidth; i += r * 2)
+        {
+            for (int j = r * 2; j < vidHeight; j += r * 2)
+            {
+                float threshold_val;
+                if (CircleControls::spawn_mode[CircleControls::spawn_index] == "brightness")
+                    threshold_val = vidPixels.getColor(i, j).getBrightness();
+                else
+                    threshold_val = vidPixels.getColor(i, j).getLightness(); // TODO: make selectable
+                CircleControls::checkThreshold(i, j, threshold_val);         // checks pixel brightness threshold and creates/increases circles
+
+                // TODO: iterate circles rather than pixels..
+                if (threshold_val > CircleControls::spawn_threshold)
+                {
+                    // empty slot: create circle ----------------------------------
+                    if (CircleControls::circle_list[i][j] == false)
+                    {
+                        if (ofRandom(0, 1) < CircleControls::spawnProbability)
+                        {
+                            CircleControls::circles.push_back(new Circle(i, j, CircleControls::radius));
+                            CircleControls::circle_list[i][j] = true;
+                        }
+                    }
+                    // occupied slot: get circle and do life_cycle++ --------------
+                    else
+                    {
+                        for (auto &circle : CircleControls::circles)
+                        {
+                            if (circle->x == i && circle->y == j)
+                            {
+                                circle->life_cycle++;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

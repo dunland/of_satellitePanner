@@ -29,7 +29,8 @@ class CircleControls
 {
 public:
     // general:
-    static ofParameter<bool> draw_circles;
+    static ofParameter<bool> bDrawCircles;
+    static ofParameter<bool> bAutomaticCircleCreation;
     static float radius_standard; // this is the value the dot size will fall back to
     static ofParameter<int> radius;          // actual (temporary) dot radius
 

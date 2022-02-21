@@ -10,7 +10,8 @@ void consoleApp::setup()
 
     // main gui:
     gui_main.setup();
-    gui_main.add(CircleControls::draw_circles.set("draw circles?", false));
+    gui_main.add(CircleControls::bDrawCircles.set("draw circles?", true));
+    gui_main.add(CircleControls::bAutomaticCircleCreation.set("automatic circle creation?", true));
     gui_main.add(LineDetection::drawLines.set("draw lines?", false));
     gui_main.add(Globals::showVideo.set("show video?", false));
     gui_main.add(gui_main_automaticParams.setup("automatic params change?", false));
