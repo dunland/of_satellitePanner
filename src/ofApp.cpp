@@ -11,8 +11,9 @@ void ofApp::setup()
 
     // communication -------------------------------------------
     receiver.setup(PORT);
-    serial.setup("/dev/ttyACM0", 9600);
-    font.load("DIN.otf", 64);
+    serial.setup("/dev/ttyACM1", 115200);
+    serial.startContinuousRead();
+    ofAddListener(serial.NEW_MESSAGE, this, &ofApp::onNewMessage);
 
     // circles setup -------------------------------------------
     ofSetCircleResolution(100);
@@ -84,27 +85,6 @@ void ofApp::update()
         CircleControls::shrinkFactor.set(float(midiParams[18]) / 127 * 10);
         CircleControls::growFactor.set(float(midiParams[19]) / 127 * 10);
     }
-
-    // Serial receive --------------------------------------------
-    nTimesRead = 0;
-    nBytesRead = 0;
-    int nRead = 0; // a temp variable to keep count per read
-
-    unsigned char bytesReturned[3];
-
-    memset(bytesReadString, 0, 4);
-    memset(bytesReturned, 0, 3);
-
-    while ((nRead = serial.readBytes(bytesReturned, 3)) > 0)
-    {
-        nTimesRead++;
-        nBytesRead = nRead;
-    };
-
-    memcpy(bytesReadString, bytesReturned, 3);
-
-    bSendSerialMessage = false;
-    readTime = ofGetElapsedTimef();
 
     // video ---------------------------------------------------
     Globals::video.update();
@@ -278,19 +258,12 @@ void ofApp::draw()
 
     // draw buffer
     mCapFbo.draw(0, 0);
+}
 
-    // draw Serial messages
-    if (nBytesRead > 0 && ((ofGetElapsedTimef() - readTime) < 0.5f))
-    {
-        ofSetColor(0);
-    }
-    else
-    {
-        ofSetColor(220);
-    }
-    string msg;
-    msg += "read: " + ofToString(bytesReadString) + "\n";
-    font.drawString(msg, 50, 100);
+// Serial receive ----------------------------------------------
+void ofApp::onNewMessage(string & message)
+{
+    cout << "onNewMessage, message: " << message << "\n";
 }
 
 //--------------------------------------------------------------

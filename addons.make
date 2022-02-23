@@ -4,3 +4,4 @@ ofxCv
 ofxGui
 ofxOpenCv
 ofxFFmpegRecorder
+ofxSimpleSerial
