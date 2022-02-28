@@ -6,7 +6,7 @@
 void ofApp::setup()
 {
 
-    ofSetFrameRate(30);
+    // ofSetFrameRate(30);
     ofSetWindowTitle("ofApp");
 
     // communication -------------------------------------------
@@ -17,6 +17,8 @@ void ofApp::setup()
 
     // circles setup -------------------------------------------
     ofSetCircleResolution(100);
+    // TODO:
+    // CircleControls::radius.addListener(this, &CircleControls::radiusChanged);
 
     // audioSetup(2);
 
@@ -38,18 +40,8 @@ void ofApp::setup()
     colorImg.allocate(vidWidth, vidHeight);
     grayImg.allocate(vidWidth, vidHeight);
 
-    // create circles initially:
-    // for (int i = CircleControls::radius * 2; i < vidWidth - CircleControls::radius * 2; i += CircleControls::radius * 2)
-    // {
-    //     for (int j = CircleControls::radius * 2; j < vidHeight - CircleControls::radius * 2; j += CircleControls::radius * 2)
-    //     {
-    //         if (ofRandom(0, 1) > CircleControls::spawnProbability)
-    //         {
-    //             CircleControls::circles.push_back(new Circle(i, j, CircleControls::radius));
-    //             CircleControls::circle_list[i][j] = true;
-    //         }
-    //     }
-    // }
+    // create circles initially --------------------------------
+    CircleControls::initialCircleCreation(vidWidth, vidHeight);
 
     // for (int i = 0; i < sizeof(midiParams); i++)
     //     midiParams[i] = 0;
@@ -289,9 +281,6 @@ void ofApp::keyPressed(int key)
 
         int r = CircleControls::radius;
 
-        // only create circles if frameRate > 30
-        // if (ofGetFrameNum() > 1 && ofGetFrameRate() > 30)
-        // {
         // --------------------------- pixel brightness: ----------------------------
         for (int i = r * 2; i < vidWidth; i += r * 2)
         {
@@ -301,11 +290,10 @@ void ofApp::keyPressed(int key)
                 if (CircleControls::spawn_mode[CircleControls::spawn_index] == "brightness")
                     threshold_val = vidPixels.getColor(i, j).getBrightness();
                 else
-                    threshold_val = vidPixels.getColor(i, j).getLightness(); // TODO: make selectable
+                    threshold_val = vidPixels.getColor(i, j).getLightness();
                 CircleControls::checkThreshold(i, j, threshold_val);
             }
         }
-        // }
     }
 }
 
@@ -478,4 +466,10 @@ void ofApp::audioSetup(int deviceNum)
     // settings.numInputChannels = 0;
     // settings.bufferSize = 256;
     // soundStream.setup(settings);
+}
+
+//--------------------------------------------------------------
+void ofApp::radiusChanged()
+{
+    CircleControls::circles.clear();
 }

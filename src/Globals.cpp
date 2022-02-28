@@ -82,6 +82,11 @@ void CircleControls::initialCircleCreation(int vidWidth, int vidHeight)
     }
 }
 
+void CircleControls::radiusChanged()
+{
+    circles.clear();
+}
+
 // ------------------------- resize circles ---------------------------
 void CircleControls::resize_circles()
 {

@@ -48,6 +48,7 @@ public:
     static void checkThreshold(int x, int y, float brightness_val);
     static void resize_circles();
     static void initialCircleCreation(int vidWidth, int vidHeight);
+    static void radiusChanged();
 
     static std::vector<Circle *> circles;
     static bool circle_list[1920][1080]; // place holder to keep track where circles are

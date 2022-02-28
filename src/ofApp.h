@@ -35,6 +35,7 @@ public:
 	void dragEvent(ofDragInfo dragInfo);
 	void gotMessage(ofMessage msg);
 	void onNewMessage(string & message);
+	void radiusChanged();
 
 	// Sound:
 	ofSoundStream soundStream;
