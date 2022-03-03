@@ -9,6 +9,7 @@ public:
     int x;
     int y;
     int radius;
+    int size_bonus = 0; // will be added to radius as trigger effect
     float life_cycle;
 
     ofColor color;
@@ -45,7 +46,7 @@ public:
     static ofParameter<float> growFactor;
     static ofParameter<float> shrinkFactor;
 
-    static void checkThreshold(int x, int y, float brightness_val);
+    static void checkPixelThreshold(int x, int y, float brightness_val);
     static void resize_circles();
     static void initialCircleCreation(int vidWidth, int vidHeight);
     static void radiusChanged();
@@ -73,4 +74,11 @@ public:
     static ofParameter<int> lineThreshold; //    Hough Transform Lines
     static ofParameter<int> minLineLength;
     static ofParameter<int> maxLineGap;
+};
+
+class TriggerFunctions
+{
+    public:
+    static void snareTrigger();
+    static void kickTrigger();
 };

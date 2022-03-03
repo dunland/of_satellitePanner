@@ -6,9 +6,9 @@ void Circle::draw()
 {
     color.set(color.r, color.g, color.b, life_cycle);
     if (CircleControls::spawn_mode[CircleControls::spawn_index] == "brightness")
-        radius = color.getBrightness() / 255 * CircleControls::radius;
+        radius = color.getBrightness() / 255 * CircleControls::radius + size_bonus;
     else if (CircleControls::spawn_mode[CircleControls::spawn_index] == "lightness")
-        radius = color.getLightness() / 255 * CircleControls::radius;
+        radius = color.getLightness() / 255 * CircleControls::radius + size_bonus;
     ofSetColor(color);
     ofFill();
     ofDrawCircle(x - radius, y - radius, radius);
@@ -19,8 +19,8 @@ void Circle::draw()
 std::vector<Circle *> CircleControls::circles;
 bool CircleControls::circle_list[1920][1080]; // place holder to keep track where circles are
 
-float CircleControls::radius_standard = 5; // this is the value the dot size will fall back to
-ofParameter<int> CircleControls::radius = 7;          // actual (temporary) dot radius
+float CircleControls::radius_standard = 5;   // this is the value the dot size will fall back to
+ofParameter<int> CircleControls::radius = 7; // actual (temporary) dot radius
 
 ofParameter<float> CircleControls::growFactor = 1;
 ofParameter<float> CircleControls::shrinkFactor = 0.1;
@@ -36,7 +36,7 @@ int CircleControls::spawn_index = 0;
 vector<string> CircleControls::spawn_mode = {"brightness", "lightness"};
 
 // --------------------- check pixel brightness -----------------------
-void CircleControls::checkThreshold(int x, int y, float threshold_val)
+void CircleControls::checkPixelThreshold(int x, int y, float threshold_val)
 {
     if (threshold_val > spawn_threshold)
     {
@@ -56,9 +56,20 @@ void CircleControls::checkThreshold(int x, int y, float threshold_val)
             {
                 if (circle->x == x && circle->y == y)
                 {
-                    circle->life_cycle++;
+                    circle->life_cycle += CircleControls::growFactor;
                     break;
                 }
+            }
+        }
+    }
+    else
+    {
+        for (auto &circle : CircleControls::circles)
+        {
+            if (circle->x == x && circle->y == y)
+            {
+                circle->life_cycle -= CircleControls::shrinkFactor;
+                break;
             }
         }
     }
@@ -82,10 +93,11 @@ void CircleControls::initialCircleCreation(int vidWidth, int vidHeight)
     }
 }
 
-void CircleControls::radiusChanged()
-{
-    circles.clear();
-}
+// TODO: add ListenerFunction for radius
+// void CircleControls::radiusChanged()
+// {
+//     circles.clear();
+// }
 
 // ------------------------- resize circles ---------------------------
 void CircleControls::resize_circles()
@@ -122,11 +134,41 @@ ofVideoPlayer Globals::video;
 int Globals::vidIdx = 0;
 ofParameter<bool> Globals::showVideo = false;
 
-
 /////////////////////////// LINE DETECTION ////////////////////////////
 ofParameter<bool> LineDetection::drawLines = true;
 
-ofParameter <int> LineDetection::edgeThreshold; //    Canny Edge Detection
-ofParameter <int> LineDetection::lineThreshold; //    Hough Transform Lines
-ofParameter <int> LineDetection::minLineLength;
-ofParameter <int> LineDetection::maxLineGap;
+ofParameter<int> LineDetection::edgeThreshold; //    Canny Edge Detection
+ofParameter<int> LineDetection::lineThreshold; //    Hough Transform Lines
+ofParameter<int> LineDetection::minLineLength;
+ofParameter<int> LineDetection::maxLineGap;
+
+///////////////////////// TRIGGER FUNCTIONS ///////////////////////////
+void TriggerFunctions::kickTrigger()
+{
+    for (int i = 0; i < CircleControls::circles.size() / 50; i++)
+    {
+        int random = int(ofRandom(CircleControls::circles.size()));
+        CircleControls::circles[random]->size_bonus = 10;
+    }
+}
+
+void TriggerFunctions::snareTrigger()
+{
+    ofPixels &vidPixels = Globals::video.getPixels();
+    int r = CircleControls::radius;
+
+    for (int i = r * 2; i < Globals::video.getWidth(); i += r * 2)
+    {
+        for (int j = r * 2; j < Globals::video.getHeight(); j += r * 2)
+        {
+            float threshold_val;
+            if (CircleControls::spawn_mode[CircleControls::spawn_index] == "brightness")
+                threshold_val = vidPixels.getColor(i, j).getBrightness();
+            else
+                threshold_val = vidPixels.getColor(i, j).getLightness();
+            CircleControls::checkPixelThreshold(i, j, threshold_val);    // checks pixel brightness threshold and creates/increases circles
+
+            CircleControls::checkPixelThreshold(i, j, threshold_val);
+        }
+    }
+}

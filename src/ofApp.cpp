@@ -11,7 +11,7 @@ void ofApp::setup()
 
     // communication -------------------------------------------
     receiver.setup(PORT);
-    serial.setup("/dev/ttyACM1", 115200);
+    serial.setup("/dev/ttyACM0", 115200);
     serial.startContinuousRead();
     ofAddListener(serial.NEW_MESSAGE, this, &ofApp::onNewMessage);
 
@@ -99,15 +99,15 @@ void ofApp::update()
     //         if (CircleControls::circle_list[i][j] == true)
     //         {
     //             float brightness_val = vidPixels.getColor(i, j).getBrightness();
-    //             CircleControls::checkThreshold(i, j, brightness_val);
-    //             CircleControls::checkThreshold(i+n, j, brightness_val);
-    //             CircleControls::checkThreshold(i+n, j+n, brightness_val);
-    //             CircleControls::checkThreshold(i, j+n, brightness_val);
-    //             CircleControls::checkThreshold(i-n, j+n, brightness_val);
-    //             CircleControls::checkThreshold(i-n, j, brightness_val);
-    //             CircleControls::checkThreshold(i-n, j-n, brightness_val);
-    //             CircleControls::checkThreshold(i, j-n, brightness_val);
-    //             CircleControls::checkThreshold(i+n, j-n, brightness_val);
+    //             CircleControls::checkPixelThreshold(i, j, brightness_val);
+    //             CircleControls::checkPixelThreshold(i+n, j, brightness_val);
+    //             CircleControls::checkPixelThreshold(i+n, j+n, brightness_val);
+    //             CircleControls::checkPixelThreshold(i, j+n, brightness_val);
+    //             CircleControls::checkPixelThreshold(i-n, j+n, brightness_val);
+    //             CircleControls::checkPixelThreshold(i-n, j, brightness_val);
+    //             CircleControls::checkPixelThreshold(i-n, j-n, brightness_val);
+    //             CircleControls::checkPixelThreshold(i, j-n, brightness_val);
+    //             CircleControls::checkPixelThreshold(i+n, j-n, brightness_val);
     //             // i+n, j
     //             // i+n, j+n
     //             // i, j+n
@@ -131,7 +131,7 @@ void ofApp::update()
     {
 
         // naturally create one circle at a time:
-        if (ofGetFrameNum() > 1 && ofGetFrameRate() > 30)
+        if (ofGetFrameNum() > 1 && ofGetFrameRate() > 15)
         {
             // --------------------------- pixel brightness: ----------------------------
             // int i = int(ofRandom(0, ofGetWindowWidth()));
@@ -145,7 +145,7 @@ void ofApp::update()
                         threshold_val = vidPixels.getColor(i, j).getBrightness();
                     else
                         threshold_val = vidPixels.getColor(i, j).getLightness(); // TODO: make selectable
-                    CircleControls::checkThreshold(i, j, threshold_val);         // checks pixel brightness threshold and creates/increases circles
+                    CircleControls::checkPixelThreshold(i, j, threshold_val);         // checks pixel brightness threshold and creates/increases circles
                 }
             }
         }
@@ -256,6 +256,17 @@ void ofApp::draw()
 void ofApp::onNewMessage(string & message)
 {
     cout << "onNewMessage, message: " << message << "\n";
+
+    if (message.rfind("hit", 0) == 0)
+    {
+        ofLogNotice("instrument hit: " + message);
+
+        if (message.rfind("snare") != message.npos)
+        {
+            ofLogNotice("snare triggered!");
+            TriggerFunctions::snareTrigger();
+        }
+    }
 }
 
 //--------------------------------------------------------------
@@ -275,25 +286,7 @@ void ofApp::keyPressed(int key)
 
     else if (key == ' ')
     {
-        ofPixels &vidPixels = Globals::video.getPixels();
-        int vidWidth = vidPixels.getWidth();
-        int vidHeight = vidPixels.getHeight();
-
-        int r = CircleControls::radius;
-
-        // --------------------------- pixel brightness: ----------------------------
-        for (int i = r * 2; i < vidWidth; i += r * 2)
-        {
-            for (int j = r * 2; j < vidHeight; j += r * 2)
-            {
-                float threshold_val;
-                if (CircleControls::spawn_mode[CircleControls::spawn_index] == "brightness")
-                    threshold_val = vidPixels.getColor(i, j).getBrightness();
-                else
-                    threshold_val = vidPixels.getColor(i, j).getLightness();
-                CircleControls::checkThreshold(i, j, threshold_val);
-            }
-        }
+        TriggerFunctions::kickTrigger();
     }
 }
 
@@ -357,49 +350,54 @@ void ofApp::keyReleased(int key)
         grayImg.allocate(vidWidth, vidHeight);
     }
 
-    if (key == ' ') // represents kick drum
+    if (key == 'b') // represents kick drum
     {
-        ofPixels &vidPixels = Globals::video.getPixels();
-        int r = CircleControls::radius;
+        TriggerFunctions::kickTrigger();
+        // ofPixels &vidPixels = Globals::video.getPixels();
+        // int r = CircleControls::radius;
 
-        for (int i = r * 2; i < vidWidth; i += r * 2)
-        {
-            for (int j = r * 2; j < vidHeight; j += r * 2)
-            {
-                float threshold_val;
-                if (CircleControls::spawn_mode[CircleControls::spawn_index] == "brightness")
-                    threshold_val = vidPixels.getColor(i, j).getBrightness();
-                else
-                    threshold_val = vidPixels.getColor(i, j).getLightness(); // TODO: make selectable
-                CircleControls::checkThreshold(i, j, threshold_val);         // checks pixel brightness threshold and creates/increases circles
+        // for (int i = r * 2; i < vidWidth; i += r * 2)
+        // {
+        //     for (int j = r * 2; j < vidHeight; j += r * 2)
+        //     {
+        //         float threshold_val;
+        //         if (CircleControls::spawn_mode[CircleControls::spawn_index] == "brightness")
+        //             threshold_val = vidPixels.getColor(i, j).getBrightness();
+        //         else
+        //             threshold_val = vidPixels.getColor(i, j).getLightness(); // TODO: make selectable
+        //         CircleControls::checkPixelThreshold(i, j, threshold_val);         // checks pixel brightness threshold and creates/increases circles
 
-                // TODO: iterate circles rather than pixels..
-                if (threshold_val > CircleControls::spawn_threshold)
-                {
-                    // empty slot: create circle ----------------------------------
-                    if (CircleControls::circle_list[i][j] == false)
-                    {
-                        if (ofRandom(0, 1) < CircleControls::spawnProbability)
-                        {
-                            CircleControls::circles.push_back(new Circle(i, j, CircleControls::radius));
-                            CircleControls::circle_list[i][j] = true;
-                        }
-                    }
-                    // occupied slot: get circle and do life_cycle++ --------------
-                    else
-                    {
-                        for (auto &circle : CircleControls::circles)
-                        {
-                            if (circle->x == i && circle->y == j)
-                            {
-                                circle->life_cycle++;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        //         // TODO: iterate circles rather than pixels..
+        //         if (threshold_val > CircleControls::spawn_threshold)
+        //         {
+        //             // empty slot: create circle ----------------------------------
+        //             if (CircleControls::circle_list[i][j] == false)
+        //             {
+        //                 if (ofRandom(0, 1) < CircleControls::spawnProbability)
+        //                 {
+        //                     CircleControls::circles.push_back(new Circle(i, j, CircleControls::radius));
+        //                     CircleControls::circle_list[i][j] = true;
+        //                 }
+        //             }
+        //             // occupied slot: get circle and do life_cycle++ --------------
+        //             else
+        //             {
+        //                 for (auto &circle : CircleControls::circles)
+        //                 {
+        //                     if (circle->x == i && circle->y == j)
+        //                     {
+        //                         circle->life_cycle++;
+        //                         break;
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+    }
+    else if (key == 'n') // snare trigger
+    {
+        TriggerFunctions::snareTrigger();
     }
 }
 
