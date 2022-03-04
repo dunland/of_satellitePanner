@@ -33,7 +33,7 @@ public:
     static ofParameter<bool> bDrawCircles;
     static ofParameter<bool> bAutomaticCircleCreation;
     static float radius_standard; // this is the value the dot size will fall back to
-    static ofParameter<int> radius;          // actual (temporary) dot radius
+    static ofParameter<float> radius;          // actual (temporary) dot radius
 
     // circle spawn:
     static ofParameter<float> spawnProbability;
@@ -68,17 +68,10 @@ public:
 class LineDetection
 {
 public:
-    static ofParameter<bool> drawLines;
+    static ofParameter<bool> bDrawLines;
 
     static ofParameter<int> edgeThreshold; //    Canny Edge Detection
     static ofParameter<int> lineThreshold; //    Hough Transform Lines
     static ofParameter<int> minLineLength;
     static ofParameter<int> maxLineGap;
-};
-
-class TriggerFunctions
-{
-    public:
-    static void snareTrigger();
-    static void kickTrigger();
 };

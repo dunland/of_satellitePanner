@@ -1,6 +1,7 @@
 #include "ofApp.h"
 #include <iostream>
 #include "Globals.h"
+#include "TriggerFunctions.h"
 
 //--------------------------------------------------------------
 void ofApp::setup()
@@ -123,7 +124,7 @@ void ofApp::update()
 
     // TODO: opencv → circle creation only along lines!
 
-    //----------------------------------- UPDATE CIRCLES --------------------------------
+    //-------------------------- UPDATE CIRCLES -----------------------
     ofPixels &vidPixels = Globals::video.getPixels();
     int r = CircleControls::radius;
 
@@ -133,7 +134,7 @@ void ofApp::update()
         // naturally create one circle at a time:
         if (ofGetFrameNum() > 1 && ofGetFrameRate() > 15)
         {
-            // --------------------------- pixel brightness: ----------------------------
+            // -------------- pixel brightness: -----------------------
             // int i = int(ofRandom(0, ofGetWindowWidth()));
             // int j = int(ofRandom(0, ofGetWindowHeight()));
             for (int i = r * 2; i < vidWidth; i += r * 2)
@@ -150,7 +151,7 @@ void ofApp::update()
             }
         }
 
-        // ----------------- naturally decrease life_cycle: ------------
+        // ----------------- naturally decrease life_cycle: -----------
         for (int i = 0; i < CircleControls::circles.size(); i++)
         {
             Circle *circle = CircleControls::circles.at(i);
@@ -164,6 +165,9 @@ void ofApp::update()
     }
     else
         CircleControls::circles.clear();
+
+    // ------------------------------ Trigger Updates -----------------
+    TriggerFunctions::cymbalUpdate();
 }
 
 // --------------------------------------------------------------------
@@ -183,7 +187,7 @@ void ofApp::draw()
         }
 
         // ---------------------------- LINE DETECTION --------------------
-        if (LineDetection::drawLines)
+        if (LineDetection::bDrawLines)
         {
             Mat mat = toCv(edge_img);
 
@@ -259,13 +263,15 @@ void ofApp::onNewMessage(string & message)
 
     if (message.rfind("hit", 0) == 0)
     {
-        ofLogNotice("instrument hit: " + message);
+        ofLogNotice(message);
 
         if (message.rfind("snare") != message.npos)
-        {
-            ofLogNotice("snare triggered!");
             TriggerFunctions::snareTrigger();
-        }
+        if (message.rfind("kick") != message.npos)
+            TriggerFunctions::kickTrigger();
+        if (message.rfind("crash") != message.npos)
+            TriggerFunctions::cymbalTrigger();
+
     }
 }
 
@@ -331,8 +337,6 @@ void ofApp::keyReleased(int key)
     else if (key == '-')
     {
         CircleControls::radius -= CircleControls::radius * 0.3;
-        // if (CircleControls::radius < CircleControls::radius_standard)
-        //     CircleControls::radius = CircleControls::radius_standard;
         CircleControls::resize_circles();
     }
 
@@ -353,51 +357,14 @@ void ofApp::keyReleased(int key)
     if (key == 'b') // represents kick drum
     {
         TriggerFunctions::kickTrigger();
-        // ofPixels &vidPixels = Globals::video.getPixels();
-        // int r = CircleControls::radius;
-
-        // for (int i = r * 2; i < vidWidth; i += r * 2)
-        // {
-        //     for (int j = r * 2; j < vidHeight; j += r * 2)
-        //     {
-        //         float threshold_val;
-        //         if (CircleControls::spawn_mode[CircleControls::spawn_index] == "brightness")
-        //             threshold_val = vidPixels.getColor(i, j).getBrightness();
-        //         else
-        //             threshold_val = vidPixels.getColor(i, j).getLightness(); // TODO: make selectable
-        //         CircleControls::checkPixelThreshold(i, j, threshold_val);         // checks pixel brightness threshold and creates/increases circles
-
-        //         // TODO: iterate circles rather than pixels..
-        //         if (threshold_val > CircleControls::spawn_threshold)
-        //         {
-        //             // empty slot: create circle ----------------------------------
-        //             if (CircleControls::circle_list[i][j] == false)
-        //             {
-        //                 if (ofRandom(0, 1) < CircleControls::spawnProbability)
-        //                 {
-        //                     CircleControls::circles.push_back(new Circle(i, j, CircleControls::radius));
-        //                     CircleControls::circle_list[i][j] = true;
-        //                 }
-        //             }
-        //             // occupied slot: get circle and do life_cycle++ --------------
-        //             else
-        //             {
-        //                 for (auto &circle : CircleControls::circles)
-        //                 {
-        //                     if (circle->x == i && circle->y == j)
-        //                     {
-        //                         circle->life_cycle++;
-        //                         break;
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
     }
     else if (key == 'n') // snare trigger
     {
         TriggerFunctions::snareTrigger();
+    }
+    else if (key == 'g')
+    {
+        TriggerFunctions::cymbalTrigger();
     }
 }
 
