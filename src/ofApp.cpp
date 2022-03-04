@@ -168,6 +168,7 @@ void ofApp::update()
 
     // ------------------------------ Trigger Updates -----------------
     TriggerFunctions::cymbalUpdate();
+    TriggerFunctions::bassUpdate();
 }
 
 // --------------------------------------------------------------------
@@ -189,38 +190,7 @@ void ofApp::draw()
         // ---------------------------- LINE DETECTION --------------------
         if (LineDetection::bDrawLines)
         {
-            Mat mat = toCv(edge_img);
-
-            vector<Vec4i> lines;
-            HoughLinesP(mat, lines, 120, CV_PI / 180, LineDetection::lineThreshold, LineDetection::minLineLength, LineDetection::maxLineGap); // (E,Rres,Thetares,Threshold,minLineLength,maxLineGap)
-            ofSetColor(255, 0, 0);
-
-            // static float count = 0;
-            // static float hue = 0;
-            // count += 0.01;
-            // hue = sin(count);
-            // cout << hue << endl;
-
-            for (int i = 0; i < lines.size(); i++)
-            {
-
-                ofColor col = ofColor(0);
-                // ofSetColor(Globals::video.getPixels().getColor(lines[i][0], lines[i][1]));
-                // col.setHsb(hue * 255, 250, 250);
-                // ofSetColor(col);
-
-                float x1 = lines[i][0];
-                float y1 = lines[i][1];
-                float x2 = lines[i][2];
-                float y2 = lines[i][3];
-                ofPolyline l;
-                l.addVertex(x1, y1);
-                l.addVertex(x2, y2);
-
-                col.setHsb(l.getLengthAtIndex(l.getIndexAtPercent(1)), 255, 255);
-                ofSetColor(col);
-                l.draw();
-            }
+            LineDetection::lineDetection(edge_img);
         }
 
         // ---------------------------- CIRCLES  --------------------------
@@ -263,7 +233,7 @@ void ofApp::onNewMessage(string & message)
 
     if (message.rfind("hit", 0) == 0)
     {
-        ofLogNotice(message);
+        ofLogNotice(ofToString(message));
 
         if (message.rfind("snare") != message.npos)
             TriggerFunctions::snareTrigger();
@@ -271,7 +241,8 @@ void ofApp::onNewMessage(string & message)
             TriggerFunctions::kickTrigger();
         if (message.rfind("crash") != message.npos)
             TriggerFunctions::cymbalTrigger();
-
+        if (message.rfind("cowbell") != message.npos) // cowball input used as bass piezo mic
+            TriggerFunctions::bassTrigger();
     }
 }
 
@@ -290,10 +261,26 @@ void ofApp::keyPressed(int key)
         cout << CircleControls::spawn_threshold << endl;
     }
 
-    else if (key == ' ')
+
+    else if (key == 'b') // represents kick drum
     {
         TriggerFunctions::kickTrigger();
     }
+    else if (key == 'n') // snare trigger
+    {
+        TriggerFunctions::snareTrigger();
+    }
+
+    else if (key == 'g')
+    {
+        TriggerFunctions::cymbalTrigger();
+    }
+
+    else if (key == 'h')
+    {
+        TriggerFunctions::bassTrigger();
+    }
+
 }
 
 //--------------------------------------------------------------
@@ -342,6 +329,8 @@ void ofApp::keyReleased(int key)
 
     else if (key == OF_KEY_RETURN) // load next video
     {
+        CircleControls::circles.clear();
+
         Globals::vidIdx = (Globals::vidIdx + 1) % Globals::videoPaths.size();
         Globals::video.load(Globals::videoPaths[Globals::vidIdx]);
 
@@ -352,19 +341,6 @@ void ofApp::keyReleased(int key)
 
         colorImg.allocate(vidWidth, vidHeight);
         grayImg.allocate(vidWidth, vidHeight);
-    }
-
-    if (key == 'b') // represents kick drum
-    {
-        TriggerFunctions::kickTrigger();
-    }
-    else if (key == 'n') // snare trigger
-    {
-        TriggerFunctions::snareTrigger();
-    }
-    else if (key == 'g')
-    {
-        TriggerFunctions::cymbalTrigger();
     }
 }
 

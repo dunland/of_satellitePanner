@@ -11,5 +11,6 @@ class TriggerFunctions
     static void cymbalUpdate();
 
     static void bassTrigger();
+    static bool bUpdateBass;
     static void bassUpdate();
 };

@@ -1,6 +1,11 @@
 #pragma once
 
 #include "ofMain.h"
+#include "ofxCv.h"
+#include "ofxOpenCv.h"
+
+using namespace cv;
+using namespace ofxCv;
 
 class Circle
 {
@@ -68,6 +73,7 @@ public:
 class LineDetection
 {
 public:
+    static void lineDetection(ofImage);
     static ofParameter<bool> bDrawLines;
 
     static ofParameter<int> edgeThreshold; //    Canny Edge Detection

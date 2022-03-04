@@ -3,6 +3,7 @@
 
 ///////////////////////// TRIGGER FUNCTIONS ///////////////////////////
 bool TriggerFunctions::bUpdateCymbal = false;
+bool TriggerFunctions::bUpdateBass = false;
 
 // ----------------------------- Kick ---------------------------------
 void TriggerFunctions::kickTrigger()
@@ -61,10 +62,23 @@ void TriggerFunctions::cymbalUpdate()
 // ----------------------------- Bass ---------------------------------
 void TriggerFunctions::bassTrigger()
 {
-    // create some lines
+    // decrease minLineLength
+    LineDetection::minLineLength = max(10, LineDetection::minLineLength - 10);
+    bUpdateBass = true;
+    LineDetection::bDrawLines = true;
 }
 
 void TriggerFunctions::bassUpdate()
 {
-    // decay lines
+    // increase minLineLength until max
+    if (bUpdateBass)
+    {
+        LineDetection::minLineLength += 3;
+        if (LineDetection::minLineLength >= 200)
+        {
+            LineDetection::bDrawLines = false;
+            bUpdateBass = false;
+            LineDetection::bDrawLines = false;
+        }
+    }
 }

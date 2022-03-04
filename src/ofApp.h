@@ -5,14 +5,9 @@
 #include <list>
 #include "Globals.h"
 #include "ofxOsc.h"
-#include "ofxCv.h"
-#include "ofxOpenCv.h"
 #include "ofxGui.h"
 #include "ofxFFmpegRecorder.h"
 #include "ofxSimpleSerial.h"
-
-using namespace cv;
-using namespace ofxCv;
 
 #define PORT 9001
 
