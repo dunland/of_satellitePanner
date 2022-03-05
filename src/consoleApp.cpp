@@ -20,8 +20,8 @@ void consoleApp::setup()
     // circles:
     gui_circles.setup();
     gui_circles.add(CircleControls::spawn_threshold.set("spawn threshold", 180, 0, 255));
-    gui_circles.add(CircleControls::spawnProbability.set("spawn probability", 0.1, 0, 1));
-    gui_circles.add(CircleControls::radius.set("circle radius", 7, 2, 100));
+    gui_circles.add(CircleControls::spawnProbability.set("spawn probability", 0.03, 0, 1));
+    gui_circles.add(CircleControls::radius.set("circle radius", 10, 5, 100));
     gui_circles.add(CircleControls::shrinkFactor.set("circle shrink factor", 0.1, 0, 10));
     gui_circles.add(CircleControls::growFactor.set("circle grow factor", 1, 0, 10));
     gui_circles.add(guiChangeSpawnMode.setup("toggle spawn mode", false));
@@ -39,12 +39,6 @@ void consoleApp::setup()
 ///////////////////////////////////////////////////////////////////////
 void consoleApp::update()
 {
-    // framerate-related spawn probability:
-    // if (CircleControls::spawnProbability > gui_circleSpawnProbability.getMax())
-    //     CircleControls::spawnProbability = gui_circleSpawnProbability.getMax();
-    // else
-    //     CircleControls::spawnProbability = gui_circleSpawnProbability;
-
     // toggle spawn mode according to pixel brightness/lightness
     if (guiChangeSpawnMode)
     {

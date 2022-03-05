@@ -9,12 +9,13 @@ void ofApp::setup()
 
     // ofSetFrameRate(30);
     ofSetWindowTitle("ofApp");
+    ofSetVerticalSync(true);
 
     // communication -------------------------------------------
     receiver.setup(PORT);
-    serial.setup("/dev/ttyACM0", 115200);
-    serial.startContinuousRead();
-    ofAddListener(serial.NEW_MESSAGE, this, &ofApp::onNewMessage);
+    // serial.setup("/dev/ttyACM0", 9600);
+    // serial.startContinuousRead(); // TODO: FIX THIS! APPLICATION CRASHES AFTER TWO SECONDS!!!
+    // ofAddListener(serial.NEW_MESSAGE, this, &ofApp::onNewMessage);
 
     // circles setup -------------------------------------------
     ofSetCircleResolution(100);
@@ -32,17 +33,17 @@ void ofApp::setup()
     for (int i = 0; i < dir.size(); i++)
         Globals::videoPaths.push_back(dir.getPath(i));
 
-    Globals::video.load(Globals::videoPaths[Globals::videoPaths.size() - 1]);
-    vidWidth = Globals::video.getWidth();
-    vidHeight = Globals::video.getHeight();
+    Globals::video.load(Globals::videoPaths[0]);
+    Globals::vidWidth = Globals::video.getWidth();
+    Globals::vidHeight = Globals::video.getHeight();
 
     Globals::video.play();
 
-    colorImg.allocate(vidWidth, vidHeight);
-    grayImg.allocate(vidWidth, vidHeight);
+    Globals::colorImage.allocate(Globals::vidWidth, Globals::vidHeight);
+    Globals::grayImage.allocate(Globals::vidWidth, Globals::vidHeight);
 
     // create circles initially --------------------------------
-    CircleControls::initialCircleCreation(vidWidth, vidHeight);
+    CircleControls::initialCircleCreation(Globals::vidWidth, Globals::vidHeight);
 
     // for (int i = 0; i < sizeof(midiParams); i++)
     //     midiParams[i] = 0;
@@ -73,29 +74,117 @@ void ofApp::update()
         }
         midiParams[channel] = value;
 
-        CircleControls::radius.set(max(midiParams[16], 1));
-        CircleControls::spawnProbability.set(float(midiParams[17]) / 127);
-        CircleControls::shrinkFactor.set(float(midiParams[18]) / 127 * 10);
-        CircleControls::growFactor.set(float(midiParams[19]) / 127 * 10);
+        // incoming instrument trigger (via serial from python)
+        if (ofIsStringInString(ofToString(message), "Snare"))
+        {
+            TriggerFunctions::snareTrigger();
+        }
+        else if (ofIsStringInString(ofToString(message), "Crash1"))
+        {
+            TriggerFunctions::cymbalTrigger();
+        }
+        else if (ofIsStringInString(ofToString(message), "Kick"))
+        {
+            TriggerFunctions::kickTrigger();
+        }
+        else if (ofIsStringInString(ofToString(message), "Hihat"))
+        {
+            // cowbell input used as bass piezo mic
+            TriggerFunctions::hihatTrigger();
+        }
+        // else if (ofIsStringInString(ofToString(message), "footswitch"))
+        // {
+        //     Globals::loadNextVideo();
+        // }
+
+        // react to different songs:
+        if (ofIsStringInString(ofToString(message), "Theodolit"))
+        {
+            TriggerFunctions::song = "Theodolit";
+
+            Globals::video.load("00-satellite_panner.mp4");
+            Globals::vidWidth = Globals::video.getWidth();
+            Globals::vidHeight = Globals::video.getHeight();
+
+            Globals::video.play();
+
+            Globals::colorImage.allocate(Globals::vidWidth, Globals::vidHeight);
+            Globals::grayImage.allocate(Globals::vidWidth, Globals::vidHeight);
+        }
+        else if (ofIsStringInString(ofToString(message), "Improvisation"))
+        {
+            TriggerFunctions::song = "Improvisation";
+            LineDetection::bDrawLines = true;
+
+            Globals::video.load("01-boundarylayers_short_1080p.mp4");
+            Globals::vidWidth = Globals::video.getWidth();
+            Globals::vidHeight = Globals::video.getHeight();
+
+            Globals::video.play();
+
+            Globals::colorImage.allocate(Globals::vidWidth, Globals::vidHeight);
+            Globals::grayImage.allocate(Globals::vidWidth, Globals::vidHeight);
+        }
+        else if (ofIsStringInString(ofToString(message), "Sattelstein"))
+        {
+            TriggerFunctions::song = "Sattelstein";
+            LineDetection::minLineLength = 27;
+            LineDetection::maxLineGap = 23;
+            CircleControls::bDrawCircles = false;
+            LineDetection::bDrawLines = true;
+
+            Globals::video.load("00-satellite_panner.mp4");
+            Globals::vidWidth = Globals::video.getWidth();
+            Globals::vidHeight = Globals::video.getHeight();
+
+            Globals::video.play();
+
+            Globals::colorImage.allocate(Globals::vidWidth, Globals::vidHeight);
+            Globals::grayImage.allocate(Globals::vidWidth, Globals::vidHeight);
+        }
+        else if (ofIsStringInString(ofToString(message), "KupferUndGold"))
+        {
+            TriggerFunctions::song = "KupferUndGold";
+            LineDetection::bDrawLines = false;
+            CircleControls::bDrawCircles = true;
+            CircleControls::bAutomaticCircleCreation = true;
+
+            Globals::video.load("02-arbol-shift-01_long.mp4");
+            Globals::vidWidth = Globals::video.getWidth();
+            Globals::vidHeight = Globals::video.getHeight();
+
+            Globals::video.play();
+
+            Globals::colorImage.allocate(Globals::vidWidth, Globals::vidHeight);
+            Globals::grayImage.allocate(Globals::vidWidth, Globals::vidHeight);
+        }
+
+        // CircleControls::radius.set(max(midiParams[16], 1));
+        // CircleControls::spawnProbability.set(float(midiParams[17]) / 127);
+        // CircleControls::shrinkFactor.set(float(midiParams[18]) / 127 * 10);
+        // CircleControls::growFactor.set(float(midiParams[19]) / 127 * 10);
+
+        ofLogNotice(ofToString(message.getAddress()));
+        ofLogNotice(ofToString(message));
     }
 
     // video ---------------------------------------------------
     Globals::video.update();
     m_Grabber.update();
 
-    colorImg.setFromPixels(Globals::video.getPixels());
-    colorImg.convertToGrayscalePlanarImage(grayImg, 0);
-    grayImg.threshold(160);
+    Globals::colorImage.setFromPixels(Globals::video.getPixels());
+    Globals::colorImage.convertToGrayscalePlanarImage(Globals::grayImage, 0);
+    Globals::grayImage.threshold(160);
 
-    Canny(grayImg, edge_img, LineDetection::edgeThreshold, LineDetection::edgeThreshold * 2);
-    Sobel(edge_img, sobel_img);
+    Canny(Globals::grayImage, Globals::edgeImage, LineDetection::edgeThreshold, LineDetection::edgeThreshold * 2);
+    Sobel(Globals::edgeImage, Globals::sobelImage);
 
     // TODO: do this only for neighboring circles of already existent ones
 
     // int n = int(r * 2);
-    // for (int i = 0; i < vidWidth - r * 2; i += r * 2)
+    // for (int i = 0; i < Globals::vidWidth - r * 2; i += r * 2)
     // {
-    //     for (int j = 0; j < vidHeight - r * 2; j += r * 2)
+    //     for (int j = 0; j < Globals::vidHeight - r * 2; j += r * 2)
     //     {
     //         if (CircleControls::circle_list[i][j] == true)
     //         {
@@ -137,16 +226,16 @@ void ofApp::update()
             // -------------- pixel brightness: -----------------------
             // int i = int(ofRandom(0, ofGetWindowWidth()));
             // int j = int(ofRandom(0, ofGetWindowHeight()));
-            for (int i = r * 2; i < vidWidth; i += r * 2)
+            for (int i = r * 2; i < Globals::vidWidth; i += r * 2)
             {
-                for (int j = r * 2; j < vidHeight; j += r * 2)
+                for (int j = r * 2; j < Globals::vidHeight; j += r * 2)
                 {
                     float threshold_val;
                     if (CircleControls::spawn_mode[CircleControls::spawn_index] == "brightness")
                         threshold_val = vidPixels.getColor(i, j).getBrightness();
                     else
                         threshold_val = vidPixels.getColor(i, j).getLightness(); // TODO: make selectable
-                    CircleControls::checkPixelThreshold(i, j, threshold_val);         // checks pixel brightness threshold and creates/increases circles
+                    CircleControls::checkPixelThreshold(i, j, threshold_val);    // checks pixel brightness threshold and creates/increases circles
                 }
             }
         }
@@ -168,7 +257,8 @@ void ofApp::update()
 
     // ------------------------------ Trigger Updates -----------------
     TriggerFunctions::cymbalUpdate();
-    TriggerFunctions::bassUpdate();
+    TriggerFunctions::hihatUpdate();
+    TriggerFunctions::kickUpdate();
 }
 
 // --------------------------------------------------------------------
@@ -190,7 +280,7 @@ void ofApp::draw()
         // ---------------------------- LINE DETECTION --------------------
         if (LineDetection::bDrawLines)
         {
-            LineDetection::lineDetection(edge_img);
+            LineDetection::lineDetection();
         }
 
         // ---------------------------- CIRCLES  --------------------------
@@ -227,23 +317,26 @@ void ofApp::draw()
 }
 
 // Serial receive ----------------------------------------------
-void ofApp::onNewMessage(string & message)
+void ofApp::onNewMessage(string &message)
 {
     cout << "onNewMessage, message: " << message << "\n";
 
-    if (message.rfind("hit", 0) == 0)
+    // if (message.rfind("hit", 0) == 0)
     {
         ofLogNotice(ofToString(message));
 
-        if (message.rfind("snare") != message.npos)
+        // if (message.rfind("Snare") != message.npos)
+        if (ofToString(message).compare("Snare"))
             TriggerFunctions::snareTrigger();
-        if (message.rfind("kick") != message.npos)
+        if (message.rfind("Kick") != message.npos)
             TriggerFunctions::kickTrigger();
-        if (message.rfind("crash") != message.npos)
+        if (message.rfind("Crash1") != message.npos)
             TriggerFunctions::cymbalTrigger();
-        if (message.rfind("cowbell") != message.npos) // cowball input used as bass piezo mic
-            TriggerFunctions::bassTrigger();
+        if (message.rfind("Cowbell") != message.npos) // cowball input used as bass piezo mic
+            TriggerFunctions::hihatTrigger();
     }
+    if (message.rfind("step") != message.npos) // cowball input used as bass piezo mic
+        Globals::loadNextVideo();
 }
 
 //--------------------------------------------------------------
@@ -261,7 +354,6 @@ void ofApp::keyPressed(int key)
         cout << CircleControls::spawn_threshold << endl;
     }
 
-
     else if (key == 'b') // represents kick drum
     {
         TriggerFunctions::kickTrigger();
@@ -278,9 +370,8 @@ void ofApp::keyPressed(int key)
 
     else if (key == 'h')
     {
-        TriggerFunctions::bassTrigger();
+        TriggerFunctions::hihatTrigger();
     }
-
 }
 
 //--------------------------------------------------------------
@@ -329,18 +420,7 @@ void ofApp::keyReleased(int key)
 
     else if (key == OF_KEY_RETURN) // load next video
     {
-        CircleControls::circles.clear();
-
-        Globals::vidIdx = (Globals::vidIdx + 1) % Globals::videoPaths.size();
-        Globals::video.load(Globals::videoPaths[Globals::vidIdx]);
-
-        vidWidth = Globals::video.getWidth();
-        vidHeight = Globals::video.getHeight();
-
-        Globals::video.play();
-
-        colorImg.allocate(vidWidth, vidHeight);
-        grayImg.allocate(vidWidth, vidHeight);
+        Globals::loadNextVideo();
     }
 }
 

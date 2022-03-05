@@ -64,16 +64,25 @@ public:
 class Globals
 {
 public:
+	// video:
     static vector<string> videoPaths;
     static int vidIdx;
     static ofVideoPlayer video;
+	static float vidWidth;
+	static float vidHeight;
 	static ofParameter<bool> showVideo; // toggles video on/off
+    static void loadNextVideo();
+
+    static ofImage img, edgeImage, sobelImage;
+	// edge and line detection:
+	static ofxCvGrayscaleImage grayImage;
+	static ofxCvColorImage colorImage;
 };
 
 class LineDetection
 {
 public:
-    static void lineDetection(ofImage);
+    static void lineDetection();
     static ofParameter<bool> bDrawLines;
 
     static ofParameter<int> edgeThreshold; //    Canny Edge Detection

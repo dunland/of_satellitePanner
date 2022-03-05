@@ -19,7 +19,7 @@ void Circle::draw()
 std::vector<Circle *> CircleControls::circles;
 bool CircleControls::circle_list[1920][1080]; // place holder to keep track where circles are
 
-float CircleControls::radius_standard = 7;     // this is the value the dot size will fall back to
+float CircleControls::radius_standard = 10;     // this is the value the dot size will fall back to
 ofParameter<float> CircleControls::radius = 7; // actual (temporary) dot radius
 
 ofParameter<float> CircleControls::growFactor = 1;
@@ -27,7 +27,7 @@ ofParameter<float> CircleControls::shrinkFactor = 0.1;
 
 ofParameter<bool> CircleControls::bDrawCircles = true;
 ofParameter<bool> CircleControls::bAutomaticCircleCreation = true;
-ofParameter<float> CircleControls::spawnProbability = 0.3;
+ofParameter<float> CircleControls::spawnProbability = 0.03;
 
 ofParameter<int> CircleControls::spawn_threshold = 180;
 int CircleControls::previous_spawn_threshold = CircleControls::spawn_threshold;
@@ -134,6 +134,30 @@ ofVideoPlayer Globals::video;
 int Globals::vidIdx = 0;
 ofParameter<bool> Globals::showVideo = false;
 
+float Globals::vidWidth;
+float Globals::vidHeight;
+
+ofImage Globals::img, Globals::edgeImage, Globals::sobelImage;
+// edge and line detection:
+ofxCvGrayscaleImage Globals::grayImage;
+ofxCvColorImage Globals::colorImage;
+
+void Globals::loadNextVideo()
+{
+    CircleControls::circles.clear();
+
+    vidIdx = (vidIdx + 1) % videoPaths.size();
+    video.load(videoPaths[vidIdx]);
+
+    vidWidth = video.getWidth();
+    vidHeight = video.getHeight();
+
+    video.play();
+
+    colorImage.allocate(vidWidth, vidHeight);
+    grayImage.allocate(vidWidth, vidHeight);
+}
+
 /////////////////////////// LINE DETECTION ////////////////////////////
 ofParameter<bool> LineDetection::bDrawLines = true;
 
@@ -142,7 +166,7 @@ ofParameter<int> LineDetection::lineThreshold; //    Hough Transform Lines
 ofParameter<int> LineDetection::minLineLength;
 ofParameter<int> LineDetection::maxLineGap;
 
-void LineDetection::lineDetection(ofImage edge_img)
+void LineDetection::lineDetection()
 {
     /*
     https://stackoverflow.com/questions/40531468/explanation-of-rho-and-theta-parameters-in-houghlines
@@ -153,7 +177,7 @@ void LineDetection::lineDetection(ofImage edge_img)
     The other parameter ρ defines how "fat" a row of the accumulator is. With a value of 1, you are saying that you want the number of accumulator rows to be equal to the biggest ρ possible, which is the diagonal of the image you're processing. So if for some two values of θ you get close values for ρ, they will still go into separate accumulator buckets because you are going for precision. For a larger value of the parameter rho, those two values might end up in the same bucket, which will ultimately give you more lines because more buckets will have a large vote count and therefore exceed the threshold.
     */
 
-    Mat mat = toCv(edge_img);
+    Mat mat = toCv(Globals::edgeImage);
 
     vector<Vec4i> lines;
     HoughLinesP(mat, lines, 60, CV_PI / 270, lineThreshold, minLineLength, maxLineGap); // (E,Rres,Thetares,Threshold,minLineLength,maxLineGap)

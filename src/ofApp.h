@@ -47,16 +47,6 @@ public:
 
 	bool spacebar_lock = false;
 
-	// video:
-	float vidWidth;
-	float vidHeight;
-
-	// edge and line detection:
-	ofxCvColorImage colorImg;
-	ofxCvGrayscaleImage grayImg;
-
-	ofImage img, edge_img, sobel_img;
-
 	// communication:
 	int midiParams[128];
 

@@ -1,58 +1,63 @@
 #include "TriggerFunctions.h"
-#include "Globals.h"
 
 ///////////////////////// TRIGGER FUNCTIONS ///////////////////////////
 bool TriggerFunctions::bUpdateCymbal = false;
-bool TriggerFunctions::bUpdateBass = false;
+bool TriggerFunctions::bUpdateHihat = false;
+bool TriggerFunctions::bUpdateKick = false;
+string TriggerFunctions::song = "Theodolit";
 
 // ----------------------------- Kick ---------------------------------
 void TriggerFunctions::kickTrigger()
 {
-    for (int i = 0; i < CircleControls::circles.size() / 50; i++)
+    // increase circle radius
+    float max_size = 30;
+    CircleControls::radius = min(max_size, CircleControls::radius + 2);
+    bUpdateKick = true;
+}
+
+void TriggerFunctions::kickUpdate()
+{
+    if (bUpdateKick)
     {
-        int random = int(ofRandom(CircleControls::circles.size()));
-        CircleControls::circles[random]->size_bonus = 10;
+        // decay circle radius until standard
+        CircleControls::radius -= 1;
+        if (CircleControls::radius <= CircleControls::radius_standard)
+        {
+            bUpdateKick = false;
+        }
     }
 }
 
 // ---------------------------- Snare ---------------------------------
 void TriggerFunctions::snareTrigger()
 {
+    /* creates 40 random circles */
+
     ofPixels &vidPixels = Globals::video.getPixels();
     int r = CircleControls::radius;
 
-    for (int i = r * 2; i < Globals::video.getWidth(); i += r * 2)
+    for (int i = 0; i <= 40; i++)
     {
-        for (int j = r * 2; j < Globals::video.getHeight(); j += r * 2)
-        {
-            float threshold_val;
-            if (CircleControls::spawn_mode[CircleControls::spawn_index] == "brightness")
-                threshold_val = vidPixels.getColor(i, j).getBrightness();
-            else
-                threshold_val = vidPixels.getColor(i, j).getLightness();
-            CircleControls::checkPixelThreshold(i, j, threshold_val); // checks pixel brightness threshold and creates/increases circles
-
-            CircleControls::checkPixelThreshold(i, j, threshold_val);
-        }
+            CircleControls::checkPixelThreshold(ofRandom(Globals::video.getWidth()), ofRandom(Globals::video.getHeight()), ofRandom(255)); // checks pixel brightness threshold and creates/increases circles
     }
 }
 
 // ---------------------------- Cymbal --------------------------------
 void TriggerFunctions::cymbalTrigger()
 {
-    // increase circle radius
-    double max_size = 100;
-    CircleControls::radius = min(max_size, (CircleControls::radius + 0.3));
+    // increase shrink factor:
+    double maxShrinkFactor = 10;
+    CircleControls::shrinkFactor = min(maxShrinkFactor, CircleControls::shrinkFactor + 0.3);
     bUpdateCymbal = true;
 }
 
 void TriggerFunctions::cymbalUpdate()
 {
+    static float shrinkStandard = 0.2;
     if (bUpdateCymbal)
-    {
-        // decay circle radius until standard
-        CircleControls::radius -= 0.1;
-        if (CircleControls::radius <= CircleControls::radius_standard)
+    { // decay circle radius until standard
+        CircleControls::shrinkFactor -= 0.1;
+        if (CircleControls::shrinkFactor <= shrinkStandard)
         {
             bUpdateCymbal = false;
         }
@@ -60,25 +65,54 @@ void TriggerFunctions::cymbalUpdate()
 }
 
 // ----------------------------- Bass ---------------------------------
-void TriggerFunctions::bassTrigger()
+void TriggerFunctions::hihatTrigger()
 {
     // decrease minLineLength
-    LineDetection::minLineLength = max(10, LineDetection::minLineLength - 10);
-    bUpdateBass = true;
-    LineDetection::bDrawLines = true;
+    if (ofIsStringInString(song, "Improvisation"))
+    {
+        LineDetection::minLineLength = max(10, LineDetection::minLineLength - 10);
+        bUpdateHihat = true;
+        LineDetection::bDrawLines = true;
+    }
 }
 
-void TriggerFunctions::bassUpdate()
+void TriggerFunctions::hihatUpdate()
 {
     // increase minLineLength until max
-    if (bUpdateBass)
+    if (bUpdateHihat && ofIsStringInString(song, "Improvisation"))
     {
         LineDetection::minLineLength += 3;
-        if (LineDetection::minLineLength >= 200)
+        if (LineDetection::minLineLength >= 100)
         {
-            LineDetection::bDrawLines = false;
-            bUpdateBass = false;
-            LineDetection::bDrawLines = false;
+            bUpdateHihat = false;
+        }
+    }
+}
+
+// -------------------------- other: ----------------------------------
+
+void increaseCircleRadius()
+{
+
+    bool bUpdateThis = false;
+    // increase circle radius
+    int max_size = 50;
+    CircleControls::radius = min(max_size, int(CircleControls::radius + 1));
+    bUpdateThis = true;
+}
+
+void increaseCircleRadiusUpdate()
+{
+
+    bool bUpdateThis = true;
+    if (bUpdateThis)
+    {
+
+        // decay circle radius until standard
+        CircleControls::radius -= 0.5;
+        if (CircleControls::radius <= CircleControls::radius_standard)
+        {
+            bUpdateThis = false;
         }
     }
 }
