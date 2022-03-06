@@ -4,26 +4,46 @@
 bool TriggerFunctions::bUpdateCymbal = false;
 bool TriggerFunctions::bUpdateHihat = false;
 bool TriggerFunctions::bUpdateKick = false;
+bool TriggerFunctions::bUpdateSnare = false;
 string TriggerFunctions::song = "Theodolit";
 
 // ----------------------------- Kick ---------------------------------
 void TriggerFunctions::kickTrigger()
 {
     // increase circle radius
-    float max_size = 30;
-    CircleControls::radius = min(max_size, CircleControls::radius + 2);
+    if (song != "Sattelstein")
+    {
+
+        float max_size = 30;
+        CircleControls::radius = min(max_size, CircleControls::radius + 2);
+    }
+    else
+    {
+        LineDetection::minLineLength = max(27, LineDetection::minLineLength - 10);
+    }
     bUpdateKick = true;
 }
 
 void TriggerFunctions::kickUpdate()
 {
-    if (bUpdateKick)
+    if (bUpdateKick && song != "Sattelstein")
     {
         // decay circle radius until standard
         CircleControls::radius -= 1;
         if (CircleControls::radius <= CircleControls::radius_standard)
         {
             bUpdateKick = false;
+        }
+    }
+    else
+    {
+        if (bUpdateKick)
+        {
+            LineDetection::minLineLength += 7;
+            if (LineDetection::minLineLength >= 127)
+            {
+                bUpdateKick = false;
+            }
         }
     }
 }
@@ -38,7 +58,25 @@ void TriggerFunctions::snareTrigger()
 
     for (int i = 0; i <= 40; i++)
     {
-            CircleControls::checkPixelThreshold(ofRandom(Globals::video.getWidth()), ofRandom(Globals::video.getHeight()), ofRandom(255)); // checks pixel brightness threshold and creates/increases circles
+        CircleControls::checkPixelThreshold(ofRandom(Globals::video.getWidth()), ofRandom(Globals::video.getHeight()), ofRandom(255)); // checks pixel brightness threshold and creates/increases circles
+    }
+
+    if (song == "Sattelstein")
+    {
+        LineDetection::maxLineGap = max(27, LineDetection::minLineLength - 10);
+        bUpdateSnare = true;
+    }
+}
+
+void TriggerFunctions::snareUpdate()
+{
+    if (bUpdateSnare && song == "Sattelstein")
+    {
+        LineDetection::maxLineGap += 7;
+        if (LineDetection::maxLineGap >= 150)
+        {
+            bUpdateSnare = false;
+        }
     }
 }
 

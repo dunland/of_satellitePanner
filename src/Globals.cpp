@@ -19,7 +19,7 @@ void Circle::draw()
 std::vector<Circle *> CircleControls::circles;
 bool CircleControls::circle_list[1920][1080]; // place holder to keep track where circles are
 
-float CircleControls::radius_standard = 10;     // this is the value the dot size will fall back to
+float CircleControls::radius_standard = 10;    // this is the value the dot size will fall back to
 ofParameter<float> CircleControls::radius = 7; // actual (temporary) dot radius
 
 ofParameter<float> CircleControls::growFactor = 1;

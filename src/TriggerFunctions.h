@@ -6,6 +6,8 @@ class TriggerFunctions
 {
     public:
     static void snareTrigger();
+    static bool bUpdateSnare;
+    static void snareUpdate();
 
     static void kickTrigger();
     static bool bUpdateKick;

@@ -259,6 +259,7 @@ void ofApp::update()
     TriggerFunctions::cymbalUpdate();
     TriggerFunctions::hihatUpdate();
     TriggerFunctions::kickUpdate();
+    TriggerFunctions::snareUpdate();
 }
 
 // --------------------------------------------------------------------
