@@ -1,5 +1,5 @@
-#N canvas 872 169 956 737 12;
-#X obj 50 -50 import mrpeach;
+#N canvas 872 178 956 737 12;
+#X obj 50 -70 import mrpeach;
 #X msg 50 -10 connect localhost 9001;
 #X msg 130 20 disconnect;
 #X floatatom 130 50 5 0 0 0 - - -, f 5;
@@ -14,6 +14,7 @@
 #X obj 300 79 print midi;
 #X msg 130 80 send /midi/value/ \$1;
 #X msg 140 110 send /midi/channel/ \$1;
+#X obj 50 -40 loadbang;
 #X connect 1 0 5 0;
 #X connect 2 0 5 0;
 #X connect 3 0 13 0;
@@ -30,3 +31,4 @@
 #X connect 13 0 11 0;
 #X connect 14 0 4 0;
 #X connect 14 0 11 0;
+#X connect 15 0 1 0;
